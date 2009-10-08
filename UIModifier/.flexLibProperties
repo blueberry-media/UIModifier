@@ -3,10 +3,10 @@
   <includeClasses>
     <classEntry path="dv.events.HandleEvent"/>
     <classEntry path="dv.events.UIModifierEvent"/>
-    <classEntry path="dv.ui.modifier.HandleCentre"/>
-    <classEntry path="dv.ui.modifier.HandleRotate"/>
-    <classEntry path="dv.ui.modifier.HandleScale"/>
-    <classEntry path="dv.ui.modifier.MouseHandler"/>
+    <classEntry path="dv.ui.modifier.handler.HandleCentre"/>
+    <classEntry path="dv.ui.modifier.handler.HandleRotate"/>
+    <classEntry path="dv.ui.modifier.handler.HandleScale"/>
+    <classEntry path="dv.ui.modifier.handler.MouseHandler"/>
     <classEntry path="dv.ui.modifier.UIModifier"/>
     <classEntry path="dv.utils.MathUtils"/>
     <classEntry path="nbilyk.utils.CoordMath"/>

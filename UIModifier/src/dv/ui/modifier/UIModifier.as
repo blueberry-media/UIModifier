@@ -39,6 +39,9 @@ package dv.ui.modifier
 	import mx.styles.StyleManager;
 	
 	import nbilyk.utils.PivotRotate;
+	import dv.ui.modifier.handler.HandleCentre;
+	import dv.ui.modifier.handler.HandleRotate;
+	import dv.ui.modifier.handler.HandleScale;
 	
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
@@ -63,16 +66,35 @@ package dv.ui.modifier
 	public class UIModifier extends Canvas
 	{
 
-		[Bindable] private var _handle:Class;
-		[Bindable] private var _rotate_handle:Class;
-		[Bindable] private var _centrePoint:Class;
-		[Bindable] private var _cursor_left_right:Class;
-		[Bindable] private var _cursor_right_left:Class;
-		[Bindable] private var _cursor_vertical:Class;
-		[Bindable] private var _cursor_horizontal:Class;
-		[Bindable] private var _cursor_move:Class;
-		[Bindable] private var _cursor_pivot:Class;
-		[Bindable] private var _cursor_rotate:Class;
+		[Bindable] 
+		private var _handle:Class;
+		
+		[Bindable] 
+		private var _rotate_handle:Class;
+		
+		[Bindable]
+		private var _centrePoint:Class;
+		
+		[Bindable] 
+		private var _cursor_left_right:Class;
+		
+		[Bindable] 
+		private var _cursor_right_left:Class;
+		
+		[Bindable] 
+		private var _cursor_vertical:Class;
+		
+		[Bindable] 
+		private var _cursor_horizontal:Class;
+		
+		[Bindable] 
+		private var _cursor_move:Class;
+		
+		[Bindable] 
+		private var _cursor_pivot:Class;
+		
+		[Bindable] 
+		private var _cursor_rotate:Class;
 		
 		private var _overlay:UIComponent;
 		private var _cross:UIComponent;
