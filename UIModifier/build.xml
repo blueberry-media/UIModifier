@@ -1,0 +1,44 @@
+<project name="Build UIModifier" basedir="." default="buildSWC">
+ 
+ <!-- load user configuration properties -->
+	<property file="build.properties" />
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+ 
+	<target name="all" depends="clean,docs,build"> 
+	</target>
+ 
+	<target name="buildSWC" depends="clean,build"> 
+	</target>
+	
+	<target name="build" >
+		<exec executable="${compc}" dir="${basedir}">
+			<!-- Specify the name of the output file -->
+			<arg line="-o '${bin.dir}/${component}'" />
+			
+			<!-- Specify the main source path as "src" -->
+			<arg line="-sp '${src.dir}'" />
+			<arg line="-theme '${src.dir}/assets/Theme.css'" />
+			
+			<!-- Specify the manifest.xml file and namespace to use -->
+			<arg line="-namespace http://devigner.net/ns '${src.dir}/manifest.xml'" />
+			<arg line="-include-namespaces http://devigner.net/ns" />
+
+		</exec>
+	</target>
+		
+	<target name="docs">
+		<exec executable="${FLEX_HOME}/bin/asdoc" failonerror="true">
+			<arg line="-doc-sources '${src.dir}'"/>
+			<arg line="-window-title 'UIModifier'"/>
+			<arg line="-output='${basedir}/docs/'"/>
+			<arg line="-external-library-path='${basedir}/libs'"/>
+		</exec>
+		<echo>Docs created</echo>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${basedir}/bin/" failOnError="true" includeEmptyDirs="true"/>
+		<delete dir="${basedir}/docs/" failOnError="true" includeEmptyDirs="true"/>
+	</target>
+	
+</project>

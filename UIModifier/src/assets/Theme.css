@@ -1,0 +1,20 @@
+/* CSS file */
+UIModifier{
+	border-color:#000000;
+	border-thickness:0;
+	border-alpha:1;
+	scale-handle:Embed(source="graphics.swf",symbol="handle");
+	rotate-handle:Embed(source="graphics.swf",symbol="rotate_handle");
+	centre-point:Embed(source="graphics.swf",symbol="centrePoint");
+	cursor-left-right:Embed(source="graphics.swf",symbol="cursor_left_right");
+	cursor-right-left:Embed(source="graphics.swf",symbol="cursor_right_left");
+	cursor-vertical:Embed(source="graphics.swf",symbol="cursor_vertical");
+	cursor-horizontal:Embed(source="graphics.swf",symbol="cursor_horizontal");
+	cursor-move:Embed(source="graphics.swf",symbol="cursor_move");
+	cursor-pivot:Embed(source="graphics.swf",symbol="cursor_pivot");
+	cursor-rotate:Embed(source="graphics.swf",symbol="cursor_rotate");	
+}
+Application {
+	background-color:#ffffff;
+	background-image:'';	
+}

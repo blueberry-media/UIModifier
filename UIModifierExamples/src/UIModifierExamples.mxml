@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
+	xmlns:dv="http://devigner.net/ns" 
+	creationComplete="init()" 
+	resize="resize()"
+	viewSourceURL="srcview/index.html">
+	<mx:Style>
+		Application{
+			background-image:'';
+			background-color:#ffffff;	
+		}
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import dv.events.UIModifierEvent;
+			
+			
+			private function init():void
+			{
+				modifier.visible = true;
+				modifier.setTarget( stepper );
+				modifier.addEventListener( UIModifierEvent.MODIFIED,storeData)
+				modifier.debug = false;
+				modifier.scaleMode = UIModifier.SCALE_ALL;
+				modifier.enableScaling = true
+				modifier.enableRotation = true
+				//resize();
+			}
+			
+			private function resize():void
+			{
+				if ( modifier != null ) {
+					modifier.maxBoundries = new Rectangle(0,0,stage.width,stage.height);
+				}
+			}
+			
+			private function storeData(event:UIModifierEvent):void
+			{
+				var data:String = '';
+				data += "x: "+event.x+"\n";
+				data += "y: "+event.y+"\n";
+				data += "width: "+event.width+"\n";
+				data += "height: "+event.height+"\n";
+				data += "rotation: "+event.rotation+"\n";
+				data += "pivot: "+event.pivot+"\n";
+				debug.text = data;
+				resize()
+			}
+			
+			private function setSelection(event:Event):void
+			{
+				modifier.visible = true;
+				switch(elements.selectedIndex){
+					case 0:
+						modifier.visible = false;
+						break;
+					case 1:
+						modifier.setTarget( btn );
+						break;
+					case 2:
+						modifier.setTarget( btn2 );
+						break;
+					case 3:
+						modifier.setTarget( stepper );
+						break;
+					case 4:
+						modifier.setTarget( textarea );
+						break;
+				}
+			}
+			
+			private function setScaleMode(event:Event):void
+			{
+				switch ( scalemode.selectedIndex ) {
+					case 0:
+						modifier.scaleMode = UIModifier.SCALE_ALL;
+						break
+					case 1:
+						modifier.scaleMode = UIModifier.SCALE_PROPORTIONAL
+						break
+					case 2:
+						modifier.scaleMode = UIModifier.SCALE_VERTICAL;
+						break
+					case 3:
+						modifier.scaleMode = UIModifier.SCALE_HORIZONTAL;
+						break
+				}
+			}
+			
+			private function enableScaling():void
+			{
+				scalemode.enabled = _enableScaling.selected;
+				modifier.enableScaling = _enableScaling.selected
+			}
+			
+			private function enableRotation():void
+			{
+				modifier.enableRotation = _enableRotation.selected
+			}
+			
+			private function enableMoving():void
+			{
+				modifier.enableMoving = _enableMoving.selected
+			}
+
+		]]>
+	</mx:Script>
+	<mx:Canvas left="5" right="5" bottom="5" top="5">
+			
+		
+		<mx:HBox>
+			
+			<mx:ComboBox change="setSelection(event)" id="elements">
+				<mx:Array>
+					<mx:Object>Select a DisplayObject</mx:Object>
+					<mx:Object>Button 1</mx:Object>
+					<mx:Object>Button 2</mx:Object>
+					<mx:Object>Numeric</mx:Object>
+					<mx:Object>Textarea</mx:Object>
+				</mx:Array>
+			</mx:ComboBox>
+			
+			<mx:CheckBox label="Enable scaling" selected="true" change="enableScaling()" id="_enableScaling" />
+	
+			<mx:ComboBox change="setScaleMode(event)" id="scalemode">
+				<mx:Array>
+					<mx:Object>All</mx:Object>
+					<mx:Object>Proportional</mx:Object>
+					<mx:Object>Vertical</mx:Object>
+					<mx:Object>Horizontal</mx:Object>
+				</mx:Array>
+			</mx:ComboBox>
+			
+			<mx:CheckBox label="Enable rotation" selected="true" change="enableRotation()" id="_enableRotation" />
+			<mx:CheckBox label="Enable movement" selected="true" change="enableMoving()" id="_enableMoving" />
+		
+		</mx:HBox>
+		
+		<mx:Text left="5" right="5" top="30">
+			<mx:text>
+				This is an example of UIModifier, the purpose of this project is to create an universal modifier for Flex. 
+			</mx:text>
+		</mx:Text>
+		
+		<mx:Button id="btn" label="Button" x="35" y="59"/>
+		<mx:Button id="btn2" label="Button with a large label" x="117" y="88"/>
+		<mx:TextArea x="321" y="45" width="175" height="81" id="textarea"/>
+		<mx:TextArea width="200" height="200" id="debug" bottom="10" left="10"/>
+		<mx:NumericStepper x="70" y="138" id="stepper"/>
+		
+		<dv:UIModifier id="modifier" visible="false"/>
+		
+	</mx:Canvas>
+</mx:Application>

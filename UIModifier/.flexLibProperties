@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="false" version="1">
+  <includeClasses>
+    <classEntry path="dv.events.HandleEvent"/>
+    <classEntry path="dv.events.UIModifierEvent"/>
+    <classEntry path="dv.ui.modifier.HandleCentre"/>
+    <classEntry path="dv.ui.modifier.HandleRotate"/>
+    <classEntry path="dv.ui.modifier.HandleScale"/>
+    <classEntry path="dv.ui.modifier.MouseHandler"/>
+    <classEntry path="dv.ui.modifier.UIModifier"/>
+    <classEntry path="dv.utils.MathUtils"/>
+    <classEntry path="nbilyk.utils.CoordMath"/>
+    <classEntry path="nbilyk.utils.PivotRotate"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests>
+    <namespaceManifestEntry manifest="manifest.xml" namespace="http://devigner.net/ns"/>
+  </namespaceManifests>
+</flexLibProperties>

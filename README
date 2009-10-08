@@ -1,0 +1,9 @@
+UIModifier
+
+A modifier is the selection around an object as you see in eg. Adobe Flash. It handles width, height, x and y.
+
+The future:
+
+- Rotating needs perfection
+- Scaling and moving need limitations
+- Mode SCALE_PROPORTIONAL needs implementation
