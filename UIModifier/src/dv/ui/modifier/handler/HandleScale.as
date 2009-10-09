@@ -16,6 +16,7 @@ package dv.ui.modifier.handler
 	import flash.events.MouseEvent;
 	import flash.geom.Rectangle;
 	
+	[ExcludeClass]
 	public final class HandleScale extends MouseHandler
 	{
 		

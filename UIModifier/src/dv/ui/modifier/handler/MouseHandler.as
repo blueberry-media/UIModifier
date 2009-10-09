@@ -16,6 +16,7 @@ package dv.ui.modifier.handler
 	import mx.core.UIComponent;
 	import mx.managers.CursorManager;
 
+	[ExcludeClass]
 	public class MouseHandler extends UIComponent
 	{
 		

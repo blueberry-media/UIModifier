@@ -15,6 +15,7 @@ package dv.ui.modifier.handler
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	
+	[ExcludeClass]
 	public final class HandleRotate extends MouseHandler
 	{
 		

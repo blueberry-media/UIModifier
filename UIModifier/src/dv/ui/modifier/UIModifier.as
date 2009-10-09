@@ -22,6 +22,9 @@ package dv.ui.modifier
 {
 	import dv.events.HandleEvent;
 	import dv.events.UIModifierEvent;
+	import dv.ui.modifier.handler.HandleCentre;
+	import dv.ui.modifier.handler.HandleRotate;
+	import dv.ui.modifier.handler.HandleScale;
 	import dv.utils.MathUtils;
 	
 	import flash.display.DisplayObject;
@@ -30,7 +33,6 @@ package dv.ui.modifier
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
-	import mx.containers.Canvas;
 	import mx.core.ScrollPolicy;
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
@@ -39,9 +41,6 @@ package dv.ui.modifier
 	import mx.styles.StyleManager;
 	
 	import nbilyk.utils.PivotRotate;
-	import dv.ui.modifier.handler.HandleCentre;
-	import dv.ui.modifier.handler.HandleRotate;
-	import dv.ui.modifier.handler.HandleScale;
 	
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
@@ -63,7 +62,7 @@ package dv.ui.modifier
 	[Style(name="cursorRotate", type="Class", inherit="no")]
 	
 
-	public class UIModifier extends Canvas
+	public class UIModifier extends UIComponent
 	{
 
 		[Bindable] 
@@ -199,10 +198,6 @@ package dv.ui.modifier
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
-			horizontalScrollPolicy = ScrollPolicy.OFF;
-			verticalScrollPolicy = ScrollPolicy.OFF;
-			clipContent = false;
-			
 			addEventListener(FlexEvent.CREATION_COMPLETE,createdHandler);
 		}
 		

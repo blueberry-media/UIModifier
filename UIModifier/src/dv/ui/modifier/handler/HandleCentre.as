@@ -19,7 +19,7 @@ package dv.ui.modifier.handler
 	import mx.managers.CursorManager;
 	
 	
-
+	[ExcludeClass]
 	public final class HandleCentre extends MouseHandler
 	{
 		
