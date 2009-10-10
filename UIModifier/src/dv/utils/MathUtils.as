@@ -38,20 +38,5 @@ package dv.utils
 		{
 			return degree * ( 180 / Math.PI ) ;
 		}
-	
-		/**
-		 * Calculate the distance between given points
-		 *  
-		 * @param pointA
-		 * @param pointB
-		 * @return 
-		 * 
-		 */
-		public static function distance ( pointA:Point , pointB:Point ):Number
-		{
-			var dx:Number = pointA.x - pointB.x;
-			var dy:Number = pointA.y - pointB.y;
-			return Math.atan2(dy, dx);
-		}
 	}
 }

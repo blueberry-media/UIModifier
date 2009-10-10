@@ -403,14 +403,15 @@ package dv.ui.modifier
 			var point:Point = HandleRotate( event.target ).startPoint;
 			var startPoint:Point = new Point( mouseX  , mouseY  );
 			
-			var lineLength:Number = MathUtils.distance( _centre.pivot , startPoint  );
+			var lineLength:Number = Point.distance( _centre.pivot , startPoint  );
 			var corner:Number = -MathUtils.radian2degree( lineLength );
 			var pivotRotate:PivotRotate = new PivotRotate(this,_centre.pivot);
 			
 			var overcorner:Number = startPoint.y - _centre.pivot.y;
-			var extra:Number = Math.sin( overcorner / lineLength );
+			var extra:Number = Math.asin( overcorner / lineLength );
 			
-			log.info( extra , startPoint ,overcorner  , lineLength );
+			log.info( startPoint ,  _centre.pivot );
+			log.info( extra  ,overcorner  , lineLength );
 			
 			pivotRotate.rotation = - (  (corner - rotation) + extra );
 			
