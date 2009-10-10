@@ -1,10 +1,10 @@
-<project name="Build UIModifier" basedir="." default="buildSWC">
+<project name="Build UIModifier" basedir="." default="all">
  
  <!-- load user configuration properties -->
 	<property file="build.properties" />
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
  
-	<target name="all" depends="clean,docs,build"> 
+	<target name="all" depends="clean,docs,build,copy"> 
 	</target>
  
 	<target name="buildSWC" depends="clean,build"> 
@@ -25,7 +25,11 @@
 
 		</exec>
 	</target>
-		
+	
+	<target name="copy">
+		<copy file="bin/UIModifier.swc" tofile="../UIModifierExamples/libs/UIModifier.swc"/>
+	</target>
+	
 	<target name="docs">
 		<exec executable="${FLEX_HOME}/bin/asdoc" failonerror="true">
 			<arg line="-doc-sources '${src.dir}'"/>

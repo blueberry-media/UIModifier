@@ -10,7 +10,7 @@
 			background-color:#ffffff;	
 		}
 	</mx:Style>
-	<mx:Script>
+	<mx:Script> 
 		<![CDATA[
 			import dv.events.UIModifierEvent;
 			
@@ -62,7 +62,7 @@
 						break;
 					case 3:
 						modifier.setTarget( stepper );
-						break;
+						break;	
 					case 4:
 						modifier.setTarget( textarea );
 						break;
@@ -103,52 +103,74 @@
 				modifier.enableMoving = _enableMoving.selected
 			}
 
+
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				modifier.reset();
+			}
+
+
+			protected function _enableMoving_changeHandler(event:Event):void
+			{
+				//modifier.debug = _showDebug.selected
+			}
+
 		]]>
 	</mx:Script>
 	<mx:Canvas left="5" right="5" bottom="5" top="5">
 			
-		
-		<mx:HBox>
+		<mx:VBox width="100%" height="100%">
 			
-			<mx:ComboBox change="setSelection(event)" id="elements">
-				<mx:Array>
-					<mx:Object>Select a DisplayObject</mx:Object>
-					<mx:Object>Button 1</mx:Object>
-					<mx:Object>Button 2</mx:Object>
-					<mx:Object>Numeric</mx:Object>
-					<mx:Object>Textarea</mx:Object>
-				</mx:Array>
-			</mx:ComboBox>
 			
-			<mx:CheckBox label="Enable scaling" selected="true" change="enableScaling()" id="_enableScaling" />
-	
-			<mx:ComboBox change="setScaleMode(event)" id="scalemode">
-				<mx:Array>
-					<mx:Object>All</mx:Object>
-					<mx:Object>Proportional</mx:Object>
-					<mx:Object>Vertical</mx:Object>
-					<mx:Object>Horizontal</mx:Object>
-				</mx:Array>
-			</mx:ComboBox>
+			<mx:Tile width="100%" direction="horizontal">
+				
+				<mx:ComboBox change="setSelection(event)" id="elements">
+					<mx:Array>
+						<mx:Object>Select a DisplayObject</mx:Object>
+						<mx:Object>Button 1</mx:Object>
+						<mx:Object>Button 2</mx:Object>
+						<mx:Object>Numeric</mx:Object>
+						<mx:Object>Textarea</mx:Object>
+					</mx:Array>
+				</mx:ComboBox>
+				
+				<mx:CheckBox label="Enable scaling" selected="true" change="enableScaling()" id="_enableScaling" />
+		
+				<mx:ComboBox change="setScaleMode(event)" id="scalemode">
+					<mx:Array>
+						<mx:Object>All</mx:Object>
+						<mx:Object>Proportional</mx:Object>
+						<mx:Object>Vertical</mx:Object>
+						<mx:Object>Horizontal</mx:Object>
+					</mx:Array>
+				</mx:ComboBox>
+				
+				<mx:CheckBox label="Enable rotation" selected="true" change="enableRotation()" id="_enableRotation" />
+				<mx:CheckBox label="Enable movement" selected="true" change="enableMoving()" id="_enableMoving" />
+				<mx:CheckBox label="Show debug" selected="true" change="_enableMoving_changeHandler(event)" id="_showDebug" />
+				<mx:Button click="button1_clickHandler(event)" label="Reset"/>
 			
-			<mx:CheckBox label="Enable rotation" selected="true" change="enableRotation()" id="_enableRotation" />
-			<mx:CheckBox label="Enable movement" selected="true" change="enableMoving()" id="_enableMoving" />
+			</mx:Tile>
+			
+			<mx:Text left="5" right="5" top="30">
+				<mx:text>
+					This is an example of UIModifier, the purpose of this project is to create an universal modifier for Flex. 
+				</mx:text>
+			</mx:Text>
+			
+			<mx:Canvas width="100%" height="100%">
+				
+				<mx:Button id="btn" label="Button" x="145" y="93"/>
+				<mx:Button id="btn2" label="Button with a large label" x="210" y="183"/>
+				<mx:TextArea x="326" y="227" width="175" height="81" id="textarea"/>
+				<mx:TextArea width="200" height="200" id="debug" bottom="10" left="10"/>
+				<mx:NumericStepper x="326" y="48" id="stepper"/>
+				
+				<dv:UIModifier id="modifier" width="171" height="100" x="39" y="253" debug="{_showDebug.selected}"/>
+			</mx:Canvas>
+			
+		</mx:VBox>
 		
-		</mx:HBox>
-		
-		<mx:Text left="5" right="5" top="30">
-			<mx:text>
-				This is an example of UIModifier, the purpose of this project is to create an universal modifier for Flex. 
-			</mx:text>
-		</mx:Text>
-		
-		<mx:Button id="btn" label="Button" x="35" y="59"/>
-		<mx:Button id="btn2" label="Button with a large label" x="117" y="88"/>
-		<mx:TextArea x="321" y="45" width="175" height="81" id="textarea"/>
-		<mx:TextArea width="200" height="200" id="debug" bottom="10" left="10"/>
-		<mx:NumericStepper x="70" y="138" id="stepper"/>
-		
-		<dv:UIModifier id="modifier" width="100" height="100" x="257" y="233"/>
 		
 	</mx:Canvas>
 </mx:Application>

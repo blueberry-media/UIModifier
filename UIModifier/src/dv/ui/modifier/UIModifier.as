@@ -22,6 +22,8 @@ package dv.ui.modifier
 {
 	import dv.events.HandleEvent;
 	import dv.events.UIModifierEvent;
+	import dv.log.LogInstance;
+	import dv.log.Logger;
 	import dv.ui.modifier.handler.HandleCentre;
 	import dv.ui.modifier.handler.HandleRotate;
 	import dv.ui.modifier.handler.HandleScale;
@@ -33,7 +35,6 @@ package dv.ui.modifier
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
-	import mx.core.ScrollPolicy;
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
 	import mx.managers.CursorManager;
@@ -116,6 +117,11 @@ package dv.ui.modifier
 		private var _enableScaling:Boolean = true;
 		private var _enableMoving:Boolean = true;
 		
+		private var _storage:Object;
+		
+		private var log:LogInstance = dv.log.Logger.createLogger( this );
+		
+		
 		public static const DIRECTION_X:uint = 1;
 		public static const DIRECTION_Y:uint = 2;
 		public static const DIRECTION_BOTH:uint = 3;
@@ -158,17 +164,15 @@ package dv.ui.modifier
          // Define a static variable.
 		private static var defaultStylesInitialized:Boolean = setDefaultStyles();
 
-		private static function setDefaultStyles ():Boolean
-		{
-        	var style:CSSStyleDeclaration = StyleManager.getStyleDeclaration("UIModifier");
-            if (!style)
-            {
-                // If there is no CSS definition for StyledRectangle, 
-                // then create one and set the default value.
-                style = new CSSStyleDeclaration();
-                style.defaultFactory = function():void
-                {
-                    this.borderColor = 0x000000;
+		private static function setDefaultStyles ():Boolean{
+			
+			var style:CSSStyleDeclaration = StyleManager.getStyleDeclaration("UIModifier");
+			if (!style){
+				// If there is no CSS definition for StyledRectangle, 
+				// then create one and set the default value.
+				style = new CSSStyleDeclaration();
+				style.defaultFactory = function():void{
+					this.borderColor      = 0x000000;
 					this.borderThickness  = 0;
 					this.borderAlpha      = 1;
 					this.scaleHandle      = __scaleHandle;
@@ -181,12 +185,11 @@ package dv.ui.modifier
 					this.cursorMove       = __cursorMove;
 					this.cursorPivot      = __cursorPivot;
 					this.cursorRotate     = __cursorRotate;
-				
-                }
-                StyleManager.setStyleDeclaration("UIModifier", style , true );
-            }
-            return true;
-        }
+				}
+				StyleManager.setStyleDeclaration("UIModifier", style , true );
+			}
+			return true;
+		}
 	
 		/**
 		 * 
@@ -198,7 +201,18 @@ package dv.ui.modifier
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
-			addEventListener(FlexEvent.CREATION_COMPLETE,createdHandler);
+		}
+		
+		override protected function createChildren():void {
+			super.createChildren();
+			createdHandler(null)
+		}
+		
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+			width = unscaledWidth;
+			height = unscaledHeight;
+			applyModifications();
 		}
 		
 		private function createdHandler(event:FlexEvent):void
@@ -344,16 +358,34 @@ package dv.ui.modifier
 			}else{
 				_centre.pivot = pivot;
 			}
+			_storage = {
+				x:_target.x,
+				y:_target.y,
+				width:_target.width,
+				height:_target.height,
+				rotation:_target.rotation
+			}
+			
+			
+			_centre.bounds = new Rectangle(0,0,width,height);
+			_ratio = _target.width / _target.height;
+			
 			x = _target.x;
 			y = _target.y;
 			rotation = _target.rotation
 			width = _target.width;
 			height = _target.height;
-			_centre.bounds = new Rectangle(0,0,width,height);
-			
-			_ratio = _target.width / _target.height;
 			
 			applyModifications();
+		}
+			
+		public function reset():void{
+			x = _storage.x;
+			y = _storage.y;
+			width = _storage.width;
+			height = _storage.height;
+			rotation = _storage.rotation;
+			applyModifications()
 		}
 
 		
@@ -368,20 +400,30 @@ package dv.ui.modifier
 		 
 		private function updateHandleRotate(event:HandleEvent):void
 		{
-			var lineLength:Number = MathUtils.distance( _centre.pivot , new Point( mouseX , mouseY ) );
+			var point:Point = HandleRotate( event.target ).startPoint;
+			var startPoint:Point = new Point( mouseX  , mouseY  );
+			
+			var lineLength:Number = MathUtils.distance( _centre.pivot , startPoint  );
 			var corner:Number = -MathUtils.radian2degree( lineLength );
 			var pivotRotate:PivotRotate = new PivotRotate(this,_centre.pivot);
-			pivotRotate.rotation = - (corner - rotation);
+			
+			var overcorner:Number = startPoint.y - _centre.pivot.y;
+			var extra:Number = Math.sin( overcorner / lineLength );
+			
+			log.info( extra , startPoint ,overcorner  , lineLength );
+			
+			pivotRotate.rotation = - (  (corner - rotation) + extra );
 			
 			if ( debug ) {
 	 			graphics.clear();
-				graphics.lineStyle(1,0xFF0000,1);
+				graphics.lineStyle( 0 , 0xFF0000 , 1 );
 				graphics.moveTo(_centre.pivot.x,_centre.pivot.y);
-				graphics.lineTo( mouseX , mouseY );
+				graphics.lineTo( point.x , point.y );
+				graphics.moveTo(_centre.pivot.x,_centre.pivot.y);
+				graphics.lineTo( startPoint.x , startPoint.y );
 			}
 			applyModifications();
 		}
-
 		
 		/**
 		 * 
@@ -688,9 +730,11 @@ package dv.ui.modifier
 		 */
 		private function applyModifications():void
 		{
-			_target.x = x;	
-			_target.y = y;
-			_target.rotation = rotation;
+			if ( _target != null ) {
+				_target.x = x;	
+				_target.y = y;
+				_target.rotation = rotation
+			}
 			updateModifiedData()
 			_resizeCounts = 0;
 			if ( !hasEventListener(Event.ENTER_FRAME) ) {
@@ -768,8 +812,10 @@ package dv.ui.modifier
 			_overlay.graphics.beginFill(0xffffff,0);
 			_overlay.graphics.drawRect(0,0,width,height);
 			
-			_target.width = width
-			_target.height = height
+			if ( _target != null ) {
+				_target.width = width
+				_target.height = height
+			}
 			
 			_centre.bounds = new Rectangle(0,0,width,height);
 			

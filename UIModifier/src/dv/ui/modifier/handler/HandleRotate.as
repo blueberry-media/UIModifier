@@ -14,8 +14,8 @@ package dv.ui.modifier.handler
 	
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.geom.Point;
 	
-	[ExcludeClass]
 	public final class HandleRotate extends MouseHandler
 	{
 		
@@ -26,17 +26,29 @@ package dv.ui.modifier.handler
 		
 		private var _id:String;
 
+		private var _startPoint:Point
 		
 		public function HandleRotate ()
 		{
 			super();
 		}
 		
+		public function get startPoint():Point
+		{
+			return _startPoint;
+		}
+
+		public function set startPoint(value:Point):void
+		{
+			_startPoint = value;
+		}
+
 		public function set pid(value:String):void{
 			_id = value;
 		}
 
 		override protected function startModifier(event:MouseEvent):void{
+			startPoint = new Point ( parent.mouseX , parent.mouseY );
 			parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseScale)
 			addEventListener(Event.ENTER_FRAME,updatePosition);
 			super.startModifier(event);
