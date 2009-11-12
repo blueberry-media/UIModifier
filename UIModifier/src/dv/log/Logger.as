@@ -2,9 +2,10 @@ package dv.log
 {
 	import flash.external.ExternalInterface;
 	import flash.utils.getQualifiedClassName;
+	import flash.events.EventDispatcher;
 
 
-	public class Logger
+	final public class Logger 
 	{
 		
 		private static var _rules:Array = [];
@@ -25,9 +26,23 @@ package dv.log
 		private static var _buffer:Array = [];
 		private static var _externalInterface:Boolean = false;
 		private static var _useTrace:Boolean = true;
+		private static var _eventDispatcher:EventDispatcher
 		
+		public static function get eventDispatcher():EventDispatcher
+		{
+			return _eventDispatcher;
+		}
+
+		public static function set eventDispatcher(value:EventDispatcher):void
+		{
+			_eventDispatcher = value;
+		}
+
 		public static function createLogger( ref:Object ):LogInstance
 		{
+			if ( _eventDispatcher == null ) {
+				_eventDispatcher = new EventDispatcher();
+			}
 			var instance:LogInstance = new LogInstance();
 			instance.handledClass = getQualifiedClassName(ref);
 			trace("Created logger for",instance.handledClass);
@@ -80,9 +95,10 @@ package dv.log
 					ExternalInterface.call("console.log",msg);
 				}
 				if ( _buffer.length > 100 ) {
-					_buffer.splice(1);
+					_buffer.splice(0,1);
 				}
 				_buffer.push( msg );
+				_eventDispatcher.dispatchEvent( new LogEvent(LogEvent.LOG_UPDATE) ) 
 			}
 		}
 
