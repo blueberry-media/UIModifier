@@ -46,6 +46,7 @@ package dv.ui.modifier
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
 	[IconFile("UIModifier.png")]
+	[Inspectable(category="Devigner")]
 
 
 	[Style(name="borderColor", type="Number", inherit="no")]
@@ -128,38 +129,54 @@ package dv.ui.modifier
 		
 		public static const SCALE_ALL:uint = 1;
 		public static const SCALE_PROPORTIONAL:uint = 2;
+		
 		public static const SCALE_HORIZONTAL:uint = 3;
+		public static const SCALE_HORIZONTAL_LEFT:uint = 7;
+		public static const SCALE_HORIZONTAL_RIGHT:uint = 8;
+		
 		public static const SCALE_VERTICAL:uint = 4;
+		public static const SCALE_VERTICAL_BOTTOM:uint = 5;
+		public static const SCALE_VERTICAL_TOP:uint = 6;
 
 		[Embed (source="/assets/graphics.swf",symbol="handle")]
-		[Bindable] private static var __scaleHandle:Class;
+		[Bindable] 
+		private static var __scaleHandle:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="rotate_handle")]
-		[Bindable] private static var __rotateHandle:Class;
+		[Bindable] 
+		private static var __rotateHandle:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="centrePoint")]
-		[Bindable] private static var __centrePoint:Class;
+		[Bindable] 
+		private static var __centrePoint:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_left_right")]
-		[Bindable] private static var __cursorLeftRight:Class;
+		[Bindable] 
+		private static var __cursorLeftRight:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_right_left")]
-		[Bindable] private static var __cursorRightLeft:Class;
+		[Bindable] 
+		private static var __cursorRightLeft:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_vertical")]
-		[Bindable] private static var __cursorVertical:Class;
+		[Bindable] 
+		private static var __cursorVertical:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_horizontal")]
-		[Bindable] private static var __cursorHorizontal:Class;
+		[Bindable] 
+		private static var __cursorHorizontal:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_move")]
-		[Bindable] private static var __cursorMove:Class;
+		[Bindable] 
+		private static var __cursorMove:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_pivot")]
-		[Bindable] private static var __cursorPivot:Class;
+		[Bindable] 
+		private static var __cursorPivot:Class;
 
 		[Embed (source="/assets/graphics.swf",symbol="cursor_rotate")]
-		[Bindable] private static var __cursorRotate:Class;
+		[Bindable] 
+		private static var __cursorRotate:Class;
 		
          // Define a static variable.
 		private static var defaultStylesInitialized:Boolean = setDefaultStyles();
@@ -352,31 +369,35 @@ package dv.ui.modifier
 		 */	
 		public function setTarget(value:DisplayObject , pivot:Point = null ):void
 		{
-			_target = value;
-			if ( pivot == null ) {
-				_centre.pivot = new Point( _target.width / 2 ,_target.height / 2);
+			if ( value != null ) {
+				_target = value;
+				if ( pivot == null ) {
+					_centre.pivot = new Point( _target.width / 2 ,_target.height / 2);
+				}else{
+					_centre.pivot = pivot;
+				}
+				_storage = {
+					x:_target.x,
+					y:_target.y,
+					width:_target.width,
+					height:_target.height,
+					rotation:_target.rotation
+				}
+				
+				
+				_centre.bounds = new Rectangle(0,0,width,height);
+				_ratio = _target.width / _target.height;
+				
+				x = _target.x;
+				y = _target.y;
+				rotation = _target.rotation
+				width = _target.width;
+				height = _target.height;
+				
+				applyModifications();
 			}else{
-				_centre.pivot = pivot;
+				log.info("Target is null")
 			}
-			_storage = {
-				x:_target.x,
-				y:_target.y,
-				width:_target.width,
-				height:_target.height,
-				rotation:_target.rotation
-			}
-			
-			
-			_centre.bounds = new Rectangle(0,0,width,height);
-			_ratio = _target.width / _target.height;
-			
-			x = _target.x;
-			y = _target.y;
-			rotation = _target.rotation
-			width = _target.width;
-			height = _target.height;
-			
-			applyModifications();
 		}
 			
 		public function reset():void{
@@ -693,6 +714,12 @@ package dv.ui.modifier
 						_handles[HandleScale.TOP].visible = false;
 						_handles[HandleScale.RIGHT].visible = false;
 						break;
+					
+					case SCALE_VERTICAL_TOP:
+						_handles[HandleScale.BOTTOM].visible = false;
+					case SCALE_VERTICAL_BOTTOM:
+						if( scaleMode == SCALE_VERTICAL_BOTTOM)
+							_handles[HandleScale.TOP].visible = false;
 					case SCALE_VERTICAL:
 						_handles[HandleScale.LEFT_BOTTOM].visible = false;
 						_handles[HandleScale.LEFT_TOP].visible = false;
@@ -701,6 +728,12 @@ package dv.ui.modifier
 						_handles[HandleScale.RIGHT].visible = false;
 						_handles[HandleScale.LEFT].visible = false;
 						break;
+
+					case SCALE_HORIZONTAL_LEFT:
+						_handles[HandleScale.RIGHT].visible = false;
+					case SCALE_HORIZONTAL_RIGHT:
+						if( scaleMode == SCALE_HORIZONTAL_RIGHT)
+							_handles[HandleScale.LEFT].visible = false;
 					case SCALE_HORIZONTAL:
 						_handles[HandleScale.LEFT_BOTTOM].visible = false;
 						_handles[HandleScale.LEFT_TOP].visible = false;
@@ -709,6 +742,7 @@ package dv.ui.modifier
 						_handles[HandleScale.TOP].visible = false;
 						_handles[HandleScale.BOTTOM].visible = false;
 						break;
+					
 				}
 			}
 			
