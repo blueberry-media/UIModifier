@@ -5,8 +5,6 @@
 	<key>documents</key>
 	<array>
 		<dict>
-			<key>expanded</key>
-			<true/>
 			<key>name</key>
 			<string>.git</string>
 			<key>regexFolderFilter</key>
@@ -67,6 +65,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{407, 138}, {933, 661}}</string>
+	<string>{{454, 112}, {933, 661}}</string>
 </dict>
 </plist>
