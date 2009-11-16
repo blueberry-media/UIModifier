@@ -2,7 +2,7 @@ package dv.log
 {
 	import flash.external.ExternalInterface;
 
-	public class LogInstance
+	final public class LogInstance
 	{
 		
 		private var _handledClass:String
