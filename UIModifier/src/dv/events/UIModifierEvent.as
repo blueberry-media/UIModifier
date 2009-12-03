@@ -18,6 +18,7 @@ package dv.events
 	{
 		
 		public static const MODIFIED:String = 'modified';
+		public static const MODIFIED_DONE:String = 'modified_done';
 		
 		private var _x:Number
 		private var _y:Number

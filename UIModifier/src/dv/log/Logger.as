@@ -26,8 +26,19 @@ package dv.log
 		private static var _buffer:Array = [];
 		private static var _externalInterface:Boolean = false;
 		private static var _useTrace:Boolean = true;
-		private static var _eventDispatcher:EventDispatcher
+		private static var _eventDispatcher:EventDispatcher;
+		private static var _totalLines:Number = 100;
 		
+		public static function get totalLines():Number
+		{
+			return _totalLines;
+		}
+
+		public static function set totalLines(value:Number):void
+		{
+			_totalLines = value;
+		}
+
 		public static function get eventDispatcher():EventDispatcher
 		{
 			return _eventDispatcher;
@@ -45,7 +56,7 @@ package dv.log
 			}
 			var instance:LogInstance = new LogInstance();
 			instance.handledClass = getQualifiedClassName(ref);
-			trace("Created logger for",instance.handledClass);
+		//	trace("Created logger for",instance.handledClass);
 			_references.push ( instance );
 			return instance;
 		}
@@ -65,7 +76,13 @@ package dv.log
 		public static function set useTrace(v:Boolean):void
 		{
 			_useTrace = v;
-			trace("Use trace",v.toString());
+			//trace("Use trace",v.toString());
+		}
+
+		public static function clear():void
+		{
+			_buffer = [];
+			_eventDispatcher.dispatchEvent( new LogEvent(LogEvent.LOG_UPDATE) ) 
 		}
 
 		public static function get buffer():String
@@ -94,7 +111,7 @@ package dv.log
 				if ( _externalInterface ) {
 					ExternalInterface.call("console.log",msg);
 				}
-				if ( _buffer.length > 100 ) {
+				if ( _buffer.length > totalLines ) {
 					_buffer.splice(0,1);
 				}
 				_buffer.push( msg );

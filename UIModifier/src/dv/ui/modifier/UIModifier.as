@@ -42,6 +42,7 @@ package dv.ui.modifier
 	import mx.styles.StyleManager;
 	
 	import nbilyk.utils.PivotRotate;
+	import flash.events.FocusEvent;
 	
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
@@ -212,12 +213,16 @@ package dv.ui.modifier
 		 * 
 		 * 
 		 */
-		public function UIModifier()
-		{
+		public function UIModifier(){
 			super();
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
+			addEventListener(FocusEvent.FOCUS_IN,bindKeys);
+		}
+		
+		protected function bindKeys(event:FocusEvent):void{
+			log.info("Focus in")	
 		}
 		
 		override protected function createChildren():void {
@@ -232,8 +237,7 @@ package dv.ui.modifier
 			applyModifications();
 		}
 		
-		private function createdHandler(event:FlexEvent):void
-		{
+		private function createdHandler(event:FlexEvent):void{
 			_handle = getStyle("scaleHandle");
 			_rotate_handle = getStyle("rotateHandle");
 			_centrePoint = getStyle("centrePoint");
@@ -254,32 +258,28 @@ package dv.ui.modifier
 		/**
 		 * @return Boolean
 		 */
-		public function get debug():Boolean 
-		{
+		public function get debug():Boolean{
 			return _debug;
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set debug( value:Boolean ):void 
-		{
+		public function set debug( value:Boolean ):void{
 			_debug = value;
 		}
 		
 		/**
 		 * @return Boolean
 		 */
-		public function get scaleMode():Number 
-		{
+		public function get scaleMode():Number{
 			return _scaleMode;
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set scaleMode( value:Number ):void 
-		{
+		public function set scaleMode( value:Number ):void{
 			_scaleMode = value;
 			if ( _created ) {
 				handleVisibleScaleHandlers();
@@ -289,16 +289,14 @@ package dv.ui.modifier
 		/**
 		 * @return Boolean
 		 */
-		public function get enableRotation():Boolean 
-		{
+		public function get enableRotation():Boolean{
 			return _enableRotation;
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set enableRotation( value:Boolean ):void 
-		{
+		public function set enableRotation( value:Boolean ):void{
 			_enableRotation = value;
 			if ( _created ) {
 				handleVisibleScaleHandlers();
@@ -370,6 +368,7 @@ package dv.ui.modifier
 		public function setTarget(value:DisplayObject , pivot:Point = null ):void
 		{
 			if ( value != null ) {
+				//dispatchEvent( new FocusEvent(FocusEvent.FOCUS_IN));
 				_target = value;
 				if ( pivot == null ) {
 					_centre.pivot = new Point( _target.width / 2 ,_target.height / 2);
@@ -594,8 +593,7 @@ package dv.ui.modifier
 		 * @param event
 		 * 
 		 */
-		private function repositionTarget(event:Event):void
-		{
+		private function repositionTarget(event:Event):void{
 			applyModifications();
 		}
 		
@@ -611,6 +609,7 @@ package dv.ui.modifier
 			stage.removeEventListener(MouseEvent.MOUSE_UP,stopDragging);
 			stage.removeEventListener(Event.ENTER_FRAME,repositionTarget);
 			applyModifications();
+			dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
 		}
 
 		/**
@@ -618,7 +617,9 @@ package dv.ui.modifier
 		 */
 		private function updateModifiedData():void
 		{
-			dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
+			if ( _target != null ) {
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
+			}
 		}
 		
 		/**
