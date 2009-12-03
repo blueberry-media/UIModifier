@@ -39,8 +39,7 @@ package dv.log
 		}
 
 		public function error(...msg):void{
-			var mesg:String = createMessage(msg);
-			Logger.addToBuffer( Logger.LOG_ERROR , mesg , _handledClass );
+			Logger.addToBuffer( Logger.LOG_ERROR , createMessage(msg) , _handledClass );
 		}
 	}
 }

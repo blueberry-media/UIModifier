@@ -18,8 +18,8 @@
  * 
  */
 
-package dv.ui.modifier
-{
+package dv.ui.modifier {
+
 	import dv.events.HandleEvent;
 	import dv.events.UIModifierEvent;
 	import dv.log.LogInstance;
@@ -43,6 +43,9 @@ package dv.ui.modifier
 	
 	import nbilyk.utils.PivotRotate;
 	import flash.events.FocusEvent;
+	import mx.managers.IFocusManagerComponent;
+	import flash.ui.Keyboard;
+	import flash.events.KeyboardEvent;
 	
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
@@ -65,7 +68,7 @@ package dv.ui.modifier
 	[Style(name="cursorRotate", type="Class", inherit="no")]
 	
 
-	public class UIModifier extends UIComponent
+	public class UIModifier extends UIComponent implements IFocusManagerComponent
 	{
 
 		[Bindable] 
@@ -100,7 +103,7 @@ package dv.ui.modifier
 		
 		private var _overlay:UIComponent;
 		private var _cross:UIComponent;
-		private var _target:DisplayObject;
+		private var _target:DisplayObject = null;
 		private var _handles:Object;
 		private var _maxBoundries:Rectangle = new Rectangle(0,0,1000,1000);
 		private var _minBoundries:Rectangle = new Rectangle(0,0,10,10);
@@ -120,6 +123,8 @@ package dv.ui.modifier
 		private var _enableMoving:Boolean = true;
 		
 		private var _storage:Object;
+		
+		private var _focus:Boolean;
 		
 		private var log:LogInstance = dv.log.Logger.createLogger( this );
 		
@@ -218,11 +223,51 @@ package dv.ui.modifier
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
-			addEventListener(FocusEvent.FOCUS_IN,bindKeys);
+//			addEventListener(FocusEvent.FOCUS_IN,focusInHandler);
 		}
 		
-		protected function bindKeys(event:FocusEvent):void{
-			log.info("Focus in")	
+		override protected function focusInHandler (event:FocusEvent):void{
+			log.info("Focus In");
+			_focus = true;
+			draw();
+		}
+		
+		override protected function focusOutHandler(event:FocusEvent):void{
+			log.info("Focus Out")
+			_focus = false;
+			hideCursor(null);
+			draw();
+		}
+		
+		override protected function keyDownHandler(event:KeyboardEvent):void{
+			log.info("keyDownHandler");
+			var steps:Number = 1;
+			if ( event.shiftKey ) {
+				steps = 10;
+			}
+			switch(event.keyCode){
+				case Keyboard.DOWN:
+					y += steps;
+					break;
+				case Keyboard.UP:
+					y -= steps;
+					break;
+				case Keyboard.LEFT:
+					x -= steps;
+					break;
+				case Keyboard.RIGHT:
+					x += steps;
+					break;
+			}
+			event.stopImmediatePropagation()
+			event.preventDefault();
+			applyModifications();
+		}
+		
+		override protected function keyUpHandler(event:KeyboardEvent):void{
+			log.info("keyUpHandler");
+			event.stopImmediatePropagation()
+			event.preventDefault();
 		}
 		
 		override protected function createChildren():void {
@@ -235,6 +280,11 @@ package dv.ui.modifier
 			width = unscaledWidth;
 			height = unscaledHeight;
 			applyModifications();
+		}
+		
+		override public function invalidateProperties():void {
+			super.invalidateProperties();
+			//applyModifications();
 		}
 		
 		private function createdHandler(event:FlexEvent):void{
@@ -358,7 +408,7 @@ package dv.ui.modifier
 		}
 	
 		/**
-		 * To use UIModifier you have to pass you objects which you want to modify
+		 * To use UIModifier you have to pass your DisplayObject which you want to modify
 		 * through setTarget
 		 * 
 		 * @param value A displayobject where the graphics are starting at 0,0
@@ -367,9 +417,10 @@ package dv.ui.modifier
 		 */	
 		public function setTarget(value:DisplayObject , pivot:Point = null ):void
 		{
-			if ( value != null ) {
-				//dispatchEvent( new FocusEvent(FocusEvent.FOCUS_IN));
+			if ( value != null && value != _target) {
+				stopDragging(null);
 				_target = value;
+			//	log.info("setTarget",_target.x,_target.y,_target.width,_target.height);
 				if ( pivot == null ) {
 					_centre.pivot = new Point( _target.width / 2 ,_target.height / 2);
 				}else{
@@ -383,7 +434,6 @@ package dv.ui.modifier
 					rotation:_target.rotation
 				}
 				
-				
 				_centre.bounds = new Rectangle(0,0,width,height);
 				_ratio = _target.width / _target.height;
 				
@@ -394,6 +444,8 @@ package dv.ui.modifier
 				height = _target.height;
 				
 				applyModifications();
+				showCursor(null);
+				focusManager.setFocus(this);
 			}else{
 				log.info("Target is null")
 			}
@@ -608,19 +660,12 @@ package dv.ui.modifier
 			stopDrag();
 			stage.removeEventListener(MouseEvent.MOUSE_UP,stopDragging);
 			stage.removeEventListener(Event.ENTER_FRAME,repositionTarget);
-			applyModifications();
-			dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
-		}
-
-		/**
-		 * Dispatches all modification
-		 */
-		private function updateModifiedData():void
-		{
 			if ( _target != null ) {
-				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
+				applyModifications();
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
 			}
 		}
+
 		
 		/**
 		 * Create all handlers
@@ -770,17 +815,27 @@ package dv.ui.modifier
 		 * Also start the event to ensure the graphics display correctly.
 		 * 
 		 */
-		private function applyModifications():void
-		{
+		private function applyModifications():void{
 			if ( _target != null ) {
+			//	log.info("apply: ");
 				_target.x = x;	
 				_target.y = y;
 				_target.rotation = rotation
+				//updateModifiedData()
+				_resize(null);
 			}
-			updateModifiedData()
-			_resizeCounts = 0;
-			if ( !hasEventListener(Event.ENTER_FRAME) ) {
-				addEventListener(Event.ENTER_FRAME,_resize);
+			//_resizeCounts = 0;
+			//if ( !hasEventListener(Event.ENTER_FRAME) ) {
+			//	addEventListener(Event.ENTER_FRAME,_resize);
+			//}
+		}
+		
+		/**
+		 * Dispatches all modification
+		 */
+		private function updateModifiedData():void{
+			if ( _target != null ) {
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
 			}
 		}
 		
@@ -791,19 +846,39 @@ package dv.ui.modifier
 		 * @param event
 		 * 
 		 */
-		private function _resize(event:Event):void
-		{
-			if ( width < _minBoundries.width ){
-				width = _minBoundries.width
+		private function _resize(event:Event):void{
+		//	log.info("Resize")
+			if ( _target != null ) {
+				if ( _minBoundries != null ) {
+					if ( width < _minBoundries.width ){
+						width = _minBoundries.width
+					}
+					if ( height < _minBoundries.height ){
+						height = _minBoundries.height
+					}
+				}
+				
+				// apply ratio if scaleMode is set to SCALE_PROPORTIANAL ( Experimental )
+				if ( scaleMode == SCALE_PROPORTIONAL ) {
+					height = width * _ratio;
+				}
+				
+				draw();
+				
+				_target.width = width
+				_target.height = height
+				
+				_centre.bounds = new Rectangle(0,0,width,height);
+				
+				//_resizeCounts ++
+				//if ( _resizeCounts > _resizeTries ) {
+				//	removeEventListener(Event.ENTER_FRAME,_resize);
+				updateModifiedData()
+				//}
 			}
-			if ( height < _minBoundries.height ){
-				height = _minBoundries.height
-			}
-			// apply ratio if scaleMode is set to SCALE_PROPORTIANAL ( Experimental )
-			if ( scaleMode == SCALE_PROPORTIONAL ) {
-				height = width * _ratio;
-			}
-			
+		}
+		
+		private function draw():void{
 			var rotate:HandleRotate = _handles[HandleRotate.LEFT_BOTTOM]
 			_rotateHandlerSize = {width:rotate.width,height:rotate.height}
 			
@@ -823,7 +898,7 @@ package dv.ui.modifier
 			_handles[HandleScale.RIGHT_TOP].y = 0;
 			_handles[HandleScale.RIGHT_BOTTOM].x = width;
 			_handles[HandleScale.RIGHT_BOTTOM].y = height;
-/* 			
+			/* 			
 			_handles[HandleScale.LEFT_BOTTOM].bounds  = new Rectangle(10,10,-1000, 1000);
 			_handles[HandleScale.LEFT_TOP].bounds     = new Rectangle(10,10,-1000,-1000);
 			_handles[HandleScale.RIGHT_TOP].bounds    = new Rectangle(10,10, 1000,-1000);
@@ -832,7 +907,7 @@ package dv.ui.modifier
 			_handles[HandleScale.TOP].bounds          = new Rectangle(10,10,-1000,-1000);
 			_handles[HandleScale.RIGHT].bounds        = new Rectangle(10,10, 1000,-1000);
 			_handles[HandleScale.BOTTOM].bounds       = new Rectangle(10,10, 1000, 1000);
-*/
+			*/
 			
 			_handles[HandleScale.TOP].x = width / 2;
 			_handles[HandleScale.TOP].y = 0;
@@ -850,22 +925,16 @@ package dv.ui.modifier
 			_overlay.height = height;
 			
 			_overlay.graphics.clear()
-			_overlay.graphics.lineStyle(getStyle("borderThickness"),getStyle("borderColor"),getStyle("borderAlpha"));
+				
+			var bcolor:Number = getStyle("borderColor");
+			if ( _focus ) {
+				var css:CSSStyleDeclaration = StyleManager.getStyleDeclaration("global");
+				bcolor = css.getStyle("focusStrokeColor");
+			}	
+			
+			_overlay.graphics.lineStyle(getStyle("borderThickness"),bcolor,getStyle("borderAlpha"));
 			_overlay.graphics.beginFill(0xffffff,0);
 			_overlay.graphics.drawRect(0,0,width,height);
-			
-			if ( _target != null ) {
-				_target.width = width
-				_target.height = height
-			}
-			
-			_centre.bounds = new Rectangle(0,0,width,height);
-			
-			_resizeCounts ++
-			if ( _resizeCounts > _resizeTries ) {
-				removeEventListener(Event.ENTER_FRAME,_resize);
-				updateModifiedData()
-			}
 		}
 		
 		/**

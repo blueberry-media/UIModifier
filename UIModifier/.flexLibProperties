@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
     <classEntry path="dv.events.HandleEvent"/>
-    <classEntry path="dv.events.UIModifierEvent"/>
     <classEntry path="dv.log.LogEvent"/>
     <classEntry path="dv.log.LogInstance"/>
     <classEntry path="dv.log.Logger"/>
