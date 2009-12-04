@@ -52,7 +52,6 @@ package dv.ui.modifier {
 	[IconFile("UIModifier.png")]
 	[Inspectable(category="Devigner")]
 
-
 	[Style(name="borderColor", type="Number", inherit="no")]
 	[Style(name="borderAlpha", type="Number", inherit="no")]
 	[Style(name="borderThickness", type="Number", inherit="no")]
@@ -67,9 +66,7 @@ package dv.ui.modifier {
 	[Style(name="cursorPivot", type="Class", inherit="no")]
 	[Style(name="cursorRotate", type="Class", inherit="no")]
 	
-
-	public class UIModifier extends UIComponent implements IFocusManagerComponent
-	{
+	public class UIModifier extends UIComponent implements IFocusManagerComponent{
 
 		[Bindable] 
 		private var _handle:Class;
@@ -125,6 +122,7 @@ package dv.ui.modifier {
 		private var _storage:Object;
 		
 		private var _focus:Boolean;
+		private var _shiftToggled:Boolean = false;
 		
 		private var log:LogInstance = dv.log.Logger.createLogger( this );
 		
@@ -223,28 +221,24 @@ package dv.ui.modifier {
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
-//			addEventListener(FocusEvent.FOCUS_IN,focusInHandler);
 		}
 		
 		override protected function focusInHandler (event:FocusEvent):void{
-			log.info("Focus In");
 			_focus = true;
 			draw();
 		}
 		
 		override protected function focusOutHandler(event:FocusEvent):void{
-			log.info("Focus Out")
 			_focus = false;
-			hideCursor(null);
 			draw();
 		}
 		
 		override protected function keyDownHandler(event:KeyboardEvent):void{
-			log.info("keyDownHandler");
 			var steps:Number = 1;
 			if ( event.shiftKey ) {
 				steps = 10;
 			}
+			_shiftToggled = event.shiftKey;
 			switch(event.keyCode){
 				case Keyboard.DOWN:
 					y += steps;
@@ -262,10 +256,10 @@ package dv.ui.modifier {
 			event.stopImmediatePropagation()
 			event.preventDefault();
 			applyModifications();
+			dispatchModifiedDoneEvent()
 		}
 		
 		override protected function keyUpHandler(event:KeyboardEvent):void{
-			log.info("keyUpHandler");
 			event.stopImmediatePropagation()
 			event.preventDefault();
 		}
@@ -284,7 +278,7 @@ package dv.ui.modifier {
 		
 		override public function invalidateProperties():void {
 			super.invalidateProperties();
-			//applyModifications();
+			dispatchModifiedEvent();
 		}
 		
 		private function createdHandler(event:FlexEvent):void{
@@ -356,16 +350,14 @@ package dv.ui.modifier {
 		/**
 		 * @return Boolean
 		 */
-		public function get enableScaling():Boolean 
-		{
+		public function get enableScaling():Boolean {
 			return _enableScaling;
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set enableScaling( value:Boolean ):void 
-		{
+		public function set enableScaling( value:Boolean ):void {
 			_enableScaling = value;
 			if ( _created ) {
 				handleVisibleScaleHandlers();
@@ -375,16 +367,14 @@ package dv.ui.modifier {
 		/**
 		 * @return Boolean
 		 */
-		public function get enableMoving():Boolean 
-		{
+		public function get enableMoving():Boolean {
 			return _enableMoving;
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set enableMoving( value:Boolean ):void 
-		{
+		public function set enableMoving( value:Boolean ):void {
 			_enableMoving = value;
 			if ( _created ) {
 				handleVisibleScaleHandlers();
@@ -394,16 +384,14 @@ package dv.ui.modifier {
 		/**
 		 * @return Rectangle
 		 */
-		public function get maxBoundries():Rectangle 
-		{
+		public function get maxBoundries():Rectangle {
 			return _maxBoundries
 		}
 		
 		/**
 		 * @param value
 		 */
-		public function set maxBoundries( value:Rectangle ):void 
-		{
+		public function set maxBoundries( value:Rectangle ):void {
 			_maxBoundries = value;
 		}
 	
@@ -415,8 +403,7 @@ package dv.ui.modifier {
 		 * @param pivot The starting point where the rotation turns around
 		 * 
 		 */	
-		public function setTarget(value:DisplayObject , pivot:Point = null ):void
-		{
+		public function setTarget(value:DisplayObject , pivot:Point = null ):void {
 			if ( value != null && value != _target) {
 				stopDragging(null);
 				_target = value;
@@ -444,20 +431,20 @@ package dv.ui.modifier {
 				height = _target.height;
 				
 				applyModifications();
-				showCursor(null);
+				//showCursor(null);
 				focusManager.setFocus(this);
 			}else{
 				log.info("Target is null")
 			}
 		}
 			
-		public function reset():void{
+		public function reset():void {
 			x = _storage.x;
 			y = _storage.y;
 			width = _storage.width;
 			height = _storage.height;
 			rotation = _storage.rotation;
-			applyModifications()
+			applyModifications();
 		}
 
 		
@@ -470,8 +457,7 @@ package dv.ui.modifier {
 		 * 
 		 */
 		 
-		private function updateHandleRotate(event:HandleEvent):void
-		{
+		private function updateHandleRotate(event:HandleEvent):void	{
 			var point:Point = HandleRotate( event.target ).startPoint;
 			var startPoint:Point = new Point( mouseX  , mouseY  );
 			
@@ -512,8 +498,7 @@ package dv.ui.modifier {
 		 * @return 
 		 * 
 		 */
-		private function calculatePosition ( position:Point , direction:Number = 1 ) : Point
-		{
+		private function calculatePosition ( position:Point , direction:Number = 1 ) : Point {
 			var xpos:Number;
 			var ypos:Number;
 			var radians:Number = MathUtils.degree2radian ( rotation );
@@ -560,8 +545,7 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function updateHandleMove(event:HandleEvent):void
-		{
+		private function updateHandleMove(event:HandleEvent):void {
 			var position:Point
 			switch ( event.id ) {
 				// Modify properties that always work (rotation has no effect)
@@ -629,8 +613,7 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function startDragging(event:MouseEvent):void
-		{
+		private function startDragging(event:MouseEvent):void {
 			var max:Rectangle = _maxBoundries.clone()
 			max.width -= width
 			max.height -= height
@@ -645,7 +628,7 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function repositionTarget(event:Event):void{
+		private function repositionTarget(event:Event):void {
 			applyModifications();
 		}
 		
@@ -655,14 +638,13 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function stopDragging(event:MouseEvent):void
-		{
+		private function stopDragging(event:MouseEvent):void {
 			stopDrag();
 			stage.removeEventListener(MouseEvent.MOUSE_UP,stopDragging);
 			stage.removeEventListener(Event.ENTER_FRAME,repositionTarget);
 			if ( _target != null ) {
 				applyModifications();
-				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
+				dispatchModifiedDoneEvent();
 			}
 		}
 
@@ -670,8 +652,7 @@ package dv.ui.modifier {
 		/**
 		 * Create all handlers
 		 */
-		private function createHandles():void
-		{
+		private function createHandles():void {
 			_overlay = new UIComponent();
 			_modifier.addChild(_overlay);
 			
@@ -739,8 +720,7 @@ package dv.ui.modifier {
 		 * Handle different modes of movement, scaling and rotation 
 		 * 
 		 */
-		private function handleVisibleScaleHandlers():void
-		{
+		private function handleVisibleScaleHandlers():void {
 			_handles[HandleRotate.LEFT_TOP].visible = _enableRotation;
 			_handles[HandleRotate.RIGHT_TOP].visible = _enableRotation;
 			_handles[HandleRotate.LEFT_BOTTOM].visible = _enableRotation;
@@ -815,27 +795,30 @@ package dv.ui.modifier {
 		 * Also start the event to ensure the graphics display correctly.
 		 * 
 		 */
-		private function applyModifications():void{
+		public function applyModifications():void{
 			if ( _target != null ) {
-			//	log.info("apply: ");
 				_target.x = x;	
 				_target.y = y;
 				_target.rotation = rotation
-				//updateModifiedData()
 				_resize(null);
 			}
-			//_resizeCounts = 0;
-			//if ( !hasEventListener(Event.ENTER_FRAME) ) {
-			//	addEventListener(Event.ENTER_FRAME,_resize);
-			//}
 		}
 		
 		/**
 		 * Dispatches all modification
 		 */
-		private function updateModifiedData():void{
+		private function dispatchModifiedEvent():void{
 			if ( _target != null ) {
 				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
+			}
+		}
+		
+		/**
+		 * Dispatches all modification
+		 */
+		private function dispatchModifiedDoneEvent():void{
+			if ( _target != null ) {
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
 			}
 		}
 		
@@ -870,11 +853,7 @@ package dv.ui.modifier {
 				
 				_centre.bounds = new Rectangle(0,0,width,height);
 				
-				//_resizeCounts ++
-				//if ( _resizeCounts > _resizeTries ) {
-				//	removeEventListener(Event.ENTER_FRAME,_resize);
-				updateModifiedData()
-				//}
+				dispatchModifiedEvent()
 			}
 		}
 		
