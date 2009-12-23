@@ -1,33 +1,27 @@
 <project name="Build UIModifier" basedir="." default="all">
  
- <!-- load user configuration properties -->
+	<!-- load user configuration properties -->
 	<property file="build.properties" />
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
  
-	<target name="all" depends="clean,docs,build,copy"> 
-	</target>
+	<target name="all" depends="clean,docs,build,copy"></target>
  
-	<target name="buildSWC" depends="clean,build"> 
-	</target>
+	<target name="buildSWC" depends="clean,build"></target>
 	
 	<target name="build" >
-		<exec executable="${compc}" dir="${basedir}">
-			<!-- Specify the name of the output file -->
-			<arg line="-o '${bin.dir}/${component}'" />
-			
-			<!-- Specify the main source path as "src" -->
-			<arg line="-sp '${src.dir}'" />
-			<arg line="-theme '${src.dir}/assets/Theme.css'" />
-			
-			<!-- Specify the manifest.xml file and namespace to use -->
-			<arg line="-namespace http://devigner.net/ns '${src.dir}/manifest.xml'" />
-			<arg line="-include-namespaces http://devigner.net/ns" />
-
-		</exec>
+		
+		<compc output="bin/${component}" accessible="true">
+			<include-namespaces uri="http://devigner.net/ns"/>
+			<namespace uri="http://devigner.net/ns" manifest="${src.dir}/manifest.xml"/>
+			<source-path path-element="${src.dir}"/>
+			<include-file name="Theme.css" path="${src.dir}/assets/Theme.css"/>
+			<include-file name="graphics.swf" path="${src.dir}/assets/graphics.swf"/>
+		</compc>
+		
 	</target>
 	
 	<target name="copy">
-		<copy file="bin/UIModifier.swc" tofile="../UIModifierExamples/libs/UIModifier.swc"/>
+		<copy file="bin/${component}" tofile="../UIModifierExamples/libs/${component}"/>
 	</target>
 	
 	<target name="docs">

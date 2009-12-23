@@ -2,6 +2,7 @@
 <flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
     <classEntry path="dv.events.HandleEvent"/>
+    <classEntry path="dv.events.UIModifierEvent"/>
     <classEntry path="dv.log.LogEvent"/>
     <classEntry path="dv.log.LogInstance"/>
     <classEntry path="dv.log.Logger"/>
@@ -14,7 +15,11 @@
     <classEntry path="nbilyk.utils.CoordMath"/>
     <classEntry path="nbilyk.utils.PivotRotate"/>
   </includeClasses>
-  <includeResources/>
+  <includeResources>
+    <resourceEntry destPath="assets/graphics.swf" sourcePath="assets/graphics.swf"/>
+    <resourceEntry destPath="assets/graphics.fla" sourcePath="assets/graphics.fla"/>
+    <resourceEntry destPath="assets/Theme.css" sourcePath="assets/Theme.css"/>
+  </includeResources>
   <namespaceManifests>
     <namespaceManifestEntry manifest="manifest.xml" namespace="http://devigner.net/ns"/>
   </namespaceManifests>

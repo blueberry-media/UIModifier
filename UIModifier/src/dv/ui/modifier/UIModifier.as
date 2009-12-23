@@ -142,50 +142,50 @@ package dv.ui.modifier {
 		public static const SCALE_VERTICAL_BOTTOM:uint = 5;
 		public static const SCALE_VERTICAL_TOP:uint = 6;
 
-		[Embed (source="/assets/graphics.swf",symbol="handle")]
+		//[Embed (source="/assets/graphics.swf",symbol="handle")]
 		[Bindable] 
 		private static var __scaleHandle:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="rotate_handle")]
+		//[Embed (source="/assets/graphics.swf",symbol="rotate_handle")]
 		[Bindable] 
 		private static var __rotateHandle:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="centrePoint")]
+		//[Embed (source="/assets/graphics.swf",symbol="centrePoint")]
 		[Bindable] 
 		private static var __centrePoint:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_left_right")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_left_right")]
 		[Bindable] 
 		private static var __cursorLeftRight:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_right_left")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_right_left")]
 		[Bindable] 
 		private static var __cursorRightLeft:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_vertical")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_vertical")]
 		[Bindable] 
 		private static var __cursorVertical:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_horizontal")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_horizontal")]
 		[Bindable] 
 		private static var __cursorHorizontal:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_move")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_move")]
 		[Bindable] 
 		private static var __cursorMove:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_pivot")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_pivot")]
 		[Bindable] 
 		private static var __cursorPivot:Class;
 
-		[Embed (source="/assets/graphics.swf",symbol="cursor_rotate")]
+		//[Embed (source="/assets/graphics.swf",symbol="cursor_rotate")]
 		[Bindable] 
 		private static var __cursorRotate:Class;
 		
          // Define a static variable.
-		private static var defaultStylesInitialized:Boolean = setDefaultStyles();
+		//private static var defaultStylesInitialized:Boolean = setDefaultStyles();
 
-		private static function setDefaultStyles ():Boolean{
+		/*private static function setDefaultStyles ():Boolean{
 			
 			var style:CSSStyleDeclaration = StyleManager.getStyleDeclaration("UIModifier");
 			if (!style){
@@ -210,7 +210,7 @@ package dv.ui.modifier {
 				StyleManager.setStyleDeclaration("UIModifier", style , true );
 			}
 			return true;
-		}
+		}*/
 	
 		/**
 		 * 
@@ -283,15 +283,15 @@ package dv.ui.modifier {
 		
 		private function createdHandler(event:FlexEvent):void{
 			_handle = getStyle("scaleHandle");
-			_rotate_handle = getStyle("rotateHandle");
-			_centrePoint = getStyle("centrePoint");
+			_rotate_handle     = getStyle("rotateHandle");
+			_centrePoint       = getStyle("centrePoint");
 			_cursor_left_right = getStyle("cursorLeftRight");
 			_cursor_right_left = getStyle("cursorRightLeft");
-			_cursor_vertical = getStyle("cursorVertical");
+			_cursor_vertical   = getStyle("cursorVertical");
 			_cursor_horizontal = getStyle("cursorHorizontal");
-			_cursor_move = getStyle("cursorMove");
-			_cursor_pivot = getStyle("cursorPivot");
-			_cursor_rotate = getStyle("cursorRotate");
+			_cursor_move       = getStyle("cursorMove");
+			_cursor_pivot      = getStyle("cursorPivot");
+			_cursor_rotate     = getStyle("cursorRotate");
 			
 			_modifier = new UIComponent();
 			addChild(_modifier);
@@ -913,7 +913,7 @@ package dv.ui.modifier {
 			
 			_overlay.graphics.lineStyle(getStyle("borderThickness"),bcolor,getStyle("borderAlpha"));
 			_overlay.graphics.beginFill(0xffffff,0);
-			_overlay.graphics.drawRect(0,0,width,height);
+			_overlay.graphics.drawRect(0,0,width-1,height-1);
 		}
 		
 		/**
@@ -921,8 +921,7 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function showCursor(event:MouseEvent):void
-		{
+		private function showCursor(event:MouseEvent):void{
 			_cursorID = CursorManager.setCursor(_cursor_move);
 		}
 		
@@ -931,8 +930,7 @@ package dv.ui.modifier {
 		 * @param event
 		 * 
 		 */
-		private function hideCursor(event:MouseEvent):void
-		{
+		private function hideCursor(event:MouseEvent):void{
 			CursorManager.removeCursor(_cursorID);
 		}
 	}
