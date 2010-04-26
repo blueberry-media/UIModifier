@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
 	xmlns:dv="http://devigner.net/ns" 
-	creationComplete="init()" 
 	resize="resize()"
 	viewSourceURL="srcview/index.html">
 	<mx:Style>
@@ -13,17 +12,21 @@
 	<mx:Script> 
 		<![CDATA[
 			import dv.events.UIModifierEvent;
+			import dv.utils.MathUtils;
 			
 			
 			private function init():void
 			{
+				var a:int = 5;
+				var b:int = 15;
 				modifier.visible = true;
-				modifier.setTarget( stepper );
+				modifier.setTarget( _img );
 				modifier.addEventListener( UIModifierEvent.MODIFIED,storeData)
 				modifier.debug = false;
 				modifier.scaleMode = UIModifier.SCALE_ALL;
 				modifier.enableScaling = true
 				modifier.enableRotation = true
+				modifier.applyModification = true;
 				//resize();
 			}
 			
@@ -68,6 +71,9 @@
 						break;
 					case 5:
 						modifier.setTarget( _img );
+						break;
+					case 6:
+						modifier.setTarget( centerd, null, true );
 						break;
 				}
 			}
@@ -135,6 +141,7 @@
 						<mx:Object>Numeric</mx:Object>
 						<mx:Object>Textarea</mx:Object>
 						<mx:Object>Image</mx:Object>
+						<mx:Object>CenterdImage</mx:Object>
 					</mx:Array>
 				</mx:ComboBox>
 				
@@ -171,8 +178,11 @@
 				<mx:TextArea width="200" height="200" id="debug" bottom="10" left="10"/>
 				<mx:NumericStepper x="326" y="48" id="stepper"/>
 				<mx:Image source="@Embed('assets/buffed_red_medic.jpg')" id="_img" />
+				<mx:Canvas width="244" height="244" x="470" y="200" rotation="45" id="centerd" backgroundAlpha=".1" backgroundColor="#00ff00" clipContent="false" >
+					<mx:Image source="@Embed('assets/buffed_red_medic.jpg')" width="244" height="244" x="-122" y="-122" />
+				</mx:Canvas>
 				
-				<dv:UIModifier id="modifier" width="171" height="100" x="433" y="10" debug="{_showDebug.selected}"/>
+				<dv:UIModifier id="modifier" width="171" height="100" x="433" y="10" debug="{_showDebug.selected}" addedToStage="init()" />
 			</mx:Canvas>
 			
 		</mx:VBox>

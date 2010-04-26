@@ -1,5 +1,4 @@
 /**
- * 
  * UI Modifier can modify width, height, x, y and rotation of every DisplayObject
  * Because Flash doesn't support pivot editing on runtime and therefor has no place
  * to store the pivot data. You have to store it somewhere. The Class dispatches an event
@@ -11,7 +10,23 @@
  * - Scaling + rotation + position works nicely on every type of DisplayObject of the real
  *   pivot point is located at 0,0
  * 
+ * version 1.1
+ * - added Key events
+ * 	CTRL+C -> Copy Event
+ * 	CTRL+V -> Paste Event
+ * 	ESC    -> Reset to Start
+ * 	DELETE -> DELETE Event
+ * 	SHIFT  -> Holding shift will scale proportional and will move 10px by keys
+ * - Fixed rotation
+ * - isCentered this will disable the pivot point and should be used if the objet you want to 
+ *   transform is centerd in a empty container
+ * - fixed minor bugs
+ * Known bug if set scalemode = SCALE_PROPORTIONAL,
+ * then set a new source the modifier sometimes flips, stragely SHIFT keeps working well in my
+ * tests. 
+ * 
  * @author Martijn van Beek [martijn.vanbeek at gmail dot com]
+ * @author Bart Ducheyne [bart at design-lab dot be]
  * @since September, Oktober 2008
  * @version 1.0
  * @license BSD
@@ -24,6 +39,7 @@ package dv.ui.modifier {
 	import dv.events.UIModifierEvent;
 	import dv.log.LogInstance;
 	import dv.log.Logger;
+	import dv.ui.modifier.data.DisplayProperties;
 	import dv.ui.modifier.handler.HandleCentre;
 	import dv.ui.modifier.handler.HandleRotate;
 	import dv.ui.modifier.handler.HandleScale;
@@ -31,21 +47,22 @@ package dv.ui.modifier {
 	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.events.FocusEvent;
+	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
+	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.ui.Keyboard;
 	
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
 	import mx.managers.CursorManager;
+	import mx.managers.IFocusManagerComponent;
 	import mx.styles.CSSStyleDeclaration;
 	import mx.styles.StyleManager;
 	
 	import nbilyk.utils.PivotRotate;
-	import flash.events.FocusEvent;
-	import mx.managers.IFocusManagerComponent;
-	import flash.ui.Keyboard;
-	import flash.events.KeyboardEvent;
 	
 	[Event(name="modified", type="dv.events.UIMofifierEvent")]
 	
@@ -112,19 +129,29 @@ package dv.ui.modifier {
 		private var _modifier:UIComponent;
 		private var _debug:Boolean = false;
 		private var _created:Boolean = false;
+		private var _applyModification:Boolean = true;
 		private var _resizeCounts:Number = 0;
 		private var _resizeTries:Number = 10;
 		private var _rotateHandlerSize:Object;
 		private var _scaleMode:Number;
+		private var _originalScaleMode:Number;
 		private var _ratio:Number;
 		
 		private var _enableRotation:Boolean = true;
 		private var _enableScaling:Boolean = true;
 		private var _enableMoving:Boolean = true;
 		
+		//This is a object witch contains the current properties of the target
+		//we will update this object realtime and use it to dispatch events, 
+		//incase applyModifications is set to true it will also be used to set the 
+		//changes to the _target
+		private var _targetProperties:DisplayProperties;
+		
 		private var _storage:Object;
 		
 		private var _focus:Boolean;
+		
+		private var _isCentered:Boolean;
 		
 		private var log:LogInstance = dv.log.Logger.createLogger( this );
 		
@@ -184,9 +211,13 @@ package dv.ui.modifier {
 		[Bindable] 
 		private static var __cursorRotate:Class;
 		
+		public static const DELETE : String = 'DELETE';
+		public static const COPY : String = 'onCopy';
+		public static const PASTE : String = 'onPaste';
+		
          // Define a static variable.
 		private static var defaultStylesInitialized:Boolean = setDefaultStyles();
-
+		
 		private static function setDefaultStyles ():Boolean{
 			
 			var style:CSSStyleDeclaration = StyleManager.getStyleDeclaration("UIModifier");
@@ -223,6 +254,7 @@ package dv.ui.modifier {
 			focusEnabled = true;
 			mouseEnabled = true;
 			buttonMode = false;
+			_targetProperties = new DisplayProperties()
 //			addEventListener(FocusEvent.FOCUS_IN,focusInHandler);
 		}
 		
@@ -246,6 +278,11 @@ package dv.ui.modifier {
 				steps = 10;
 			}
 			switch(event.keyCode){
+				case Keyboard.SHIFT:
+					if ( scaleMode == SCALE_ALL ) {
+						_scaleMode = SCALE_PROPORTIONAL;
+					}
+					break;
 				case Keyboard.DOWN:
 					y += steps;
 					break;
@@ -258,6 +295,17 @@ package dv.ui.modifier {
 				case Keyboard.RIGHT:
 					x += steps;
 					break;
+				case 67:
+					if(event.ctrlKey){
+						dispatchEvent(new Event(COPY));
+					}
+					break;
+				//86
+				case 86:
+					if(event.ctrlKey){
+						dispatchEvent(new Event(PASTE));
+					}
+					break;
 			}
 			event.stopImmediatePropagation()
 			event.preventDefault();
@@ -265,6 +313,17 @@ package dv.ui.modifier {
 		}
 		
 		override protected function keyUpHandler(event:KeyboardEvent):void{
+			switch(event.keyCode){
+				case Keyboard.ESCAPE:
+					reset();
+					break;
+				case Keyboard.DELETE:
+					dispatchEvent(new Event(DELETE));
+					break;
+				case Keyboard.SHIFT:
+						_scaleMode = _originalScaleMode;
+					break;
+			}
 			log.info("keyUpHandler");
 			event.stopImmediatePropagation()
 			event.preventDefault();
@@ -331,6 +390,7 @@ package dv.ui.modifier {
 		 */
 		public function set scaleMode( value:Number ):void{
 			_scaleMode = value;
+			_originalScaleMode = value;
 			if ( _created ) {
 				handleVisibleScaleHandlers();
 			}
@@ -415,36 +475,66 @@ package dv.ui.modifier {
 		 * @param pivot The starting point where the rotation turns around
 		 * 
 		 */	
-		public function setTarget(value:DisplayObject , pivot:Point = null ):void
+		public function setTarget(value:DisplayObject , pivot:Point = null, isCentered:Boolean = false ):void
 		{
 			if ( value != null && value != _target) {
 				stopDragging(null);
 				_target = value;
+				_ratio = _target.width / _target.height;
 			//	log.info("setTarget",_target.x,_target.y,_target.width,_target.height);
 				if ( pivot == null ) {
 					_centre.pivot = new Point( _target.width / 2 ,_target.height / 2);
 				}else{
 					_centre.pivot = pivot;
 				}
-				_storage = {
-					x:_target.x,
-					y:_target.y,
-					width:_target.width,
-					height:_target.height,
-					rotation:_target.rotation
-				}
+				_isCentered = isCentered;
+				_targetProperties.x = _target.x;
+				_targetProperties.y = _target.y;
+				_targetProperties.width = _target.width;
+				_targetProperties.height = _target.height;
+				_targetProperties.rotation = _target.rotation;
 				
 				_centre.bounds = new Rectangle(0,0,width,height);
-				_ratio = _target.width / _target.height;
-				
-				x = _target.x;
-				y = _target.y;
-				rotation = _target.rotation
-				width = _target.width;
-				height = _target.height;
-				
-				applyModifications();
-				showCursor(null);
+				_centre.canDrag = !_isCentered;
+				if (_isCentered)
+				{
+					rotation = _target.rotation
+					width = _target.width;
+					height = _target.height;
+					///
+					var localOppositeLeg : Number = _centre.pivot.x;
+					var localAdjacentLeg : Number = _centre.pivot.y;
+					var Ls : Number = Math.sqrt((localOppositeLeg * localOppositeLeg) + (localAdjacentLeg * localAdjacentLeg));
+					if (_centre.pivot.x < 0)
+					{
+						Ls = -Ls;
+					}
+					var Lr : Number = Math.atan(localAdjacentLeg / localOppositeLeg);
+					var Gr : Number = MathUtils.degree2radian(rotation) + Lr;
+					var Gx : Number = Math.cos(Gr) * Ls;
+					var Gy : Number = Math.sin(Gr) * Ls;
+					
+					x = _target.x - Gx;
+					y = _target.y - Gy;
+					
+				}
+				else
+				{
+					x = _target.x;
+					y = _target.y;
+					rotation = _target.rotation;
+					width = _target.width;
+					height = _target.height;
+				}
+				_storage = {
+							x: x, 
+							y: y, 
+							width: width, 
+							height: height, 
+							rotation: rotation, 
+							pivot: pivot
+							}
+			//	applyModifications();
 				focusManager.setFocus(this);
 			}else{
 				log.info("Target is null")
@@ -457,6 +547,11 @@ package dv.ui.modifier {
 			width = _storage.width;
 			height = _storage.height;
 			rotation = _storage.rotation;
+			if(_isCentered || _storage.pivot == null){
+				_centre.pivot =new Point( _storage.width / 2 ,_storage.height / 2);
+			}else{
+				_centre.pivot = _storage.pivot;
+			}
 			applyModifications()
 		}
 
@@ -472,35 +567,52 @@ package dv.ui.modifier {
 		 
 		private function updateHandleRotate(event:HandleEvent):void
 		{
-			var point:Point = HandleRotate( event.target ).startPoint;
-			var startPoint:Point = new Point( mouseX  , mouseY  );
+			/*
+				a = opposite leg;
+				b = adjacent leg;
+				A = corner;
+				tan ( A ) = a / b;
+				A = atan(a/b);
+			*/
+			var mouse:Point = new Point( mouseX  , mouseY  );
+			var a:int = mouse.y - _centre.pivot.y;
+			var b:int = mouse.x - _centre.pivot.x;;
+			log.info("corner :" + Math.atan(a/b) + " RAD, "+MathUtils.radian2degree(Math.atan(a/b) ));
+			var mouseCornerRad:Number = Math.atan(a/b);
+			var handlePoint:Point = ( event.target as HandleRotate).startPoint;
+			a = handlePoint.y - _centre.pivot.y;
+			b = handlePoint.x - _centre.pivot.x;
+			var startCornerRad:Number = Math.atan(a/b);
+			log.info("cornerStartPoint :" + Math.atan(a/b) + " RAD, "+MathUtils.radian2degree(Math.atan(a/b) ));
+			var changedCornerRad:Number = mouseCornerRad - startCornerRad ;
+			log.info("Change :" +changedCornerRad + " RAD, "+MathUtils.radian2degree(changedCornerRad));
+		
+			//Round the degrees to rounded corner and then put it back to rads
+			changedCornerRad = MathUtils.degree2radian(Math.round(MathUtils.radian2degree(changedCornerRad)));
 			
-			var lineLength:Number = Point.distance( _centre.pivot , startPoint  );
+			//Calculate the position of the center point, in its parent
+			var localOppositeLeg:Number = _centre.pivot.x;
+			var localAdjacentLeg:Number = _centre.pivot.y;	
+			var Ls:Number = Math.sqrt((localOppositeLeg * localOppositeLeg ) + (localAdjacentLeg * localAdjacentLeg ) );
 			
-			var overcorner:Number = Point.distance( point , _centre.pivot );
-			var extra:Number = Math.sin( overcorner / lineLength );
-			var corner:Number = -MathUtils.radian2degree( extra );
-			
-			log.info( "updateHandleRotate" );
-			log.info( startPoint );
-			log.info( _centre.pivot );
-			log.info( extra );
-			log.info( overcorner );
-			log.info( lineLength );
-			log.info( corner );
-		//	log.info( - ( corner - rotation ) );
-			
-			//var pivotRotate:PivotRotate = new PivotRotate ( this , _centre.pivot );
-			//pivotRotate.rotation = - ( extra - rotation );
-			
-			if ( debug ) {
-	 			graphics.clear();
-				graphics.lineStyle( 0 , 0xFF0000 , 1 );
-				graphics.moveTo(_centre.pivot.x,_centre.pivot.y);
-				graphics.lineTo( point.x , point.y );
-				graphics.moveTo(_centre.pivot.x,_centre.pivot.y);
-				graphics.lineTo( startPoint.x , startPoint.y );
+			if(_centre.pivot.x < 0){
+				Ls = - Ls;
 			}
+			
+			var Lr : Number = Math.atan(localAdjacentLeg / localOppositeLeg);
+			var Gr:Number = MathUtils.degree2radian(rotation) + Lr ;
+			var Gx:Number = Math.cos(Gr) * Ls;
+			var Gy:Number = Math.sin(Gr) * Ls;
+			var offsetWidth : Number = x + Gx ;//img.width / 2;
+			var offsetHeight : Number = y + Gy ;//img.height / 2;
+			
+			var tempMatrix : Matrix = this.transform.matrix;
+			tempMatrix.translate(-offsetWidth, -offsetHeight);
+			tempMatrix.rotate(changedCornerRad);
+			tempMatrix.translate(+offsetWidth, +offsetHeight);
+			
+			this.transform.matrix = tempMatrix;
+			
 			applyModifications();
 		}
 		
@@ -603,8 +715,6 @@ package dv.ui.modifier {
 					y += position.y;
 					_handles.right_bottom.x -= event.x
 					break;
-
-				
 				// Modify properties that need reposition twice
 				case HandleScale.LEFT_TOP:
 					position = calculatePosition ( new Point ( event.x , event.y ) , DIRECTION_BOTH );
@@ -617,9 +727,9 @@ package dv.ui.modifier {
 					
 					break;
 			}
-			
-			width  = Math.round(_handles.right_bottom.x)
-			height = Math.round(_handles.right_bottom.y)
+			width  = Math.round(_handles.right_bottom.x);
+			height = Math.round(_handles.right_bottom.y);
+			_centre.pivot = new Point( width / 2 ,height / 2);
 			applyModifications()
 		}
 		
@@ -660,9 +770,10 @@ package dv.ui.modifier {
 			stopDrag();
 			stage.removeEventListener(MouseEvent.MOUSE_UP,stopDragging);
 			stage.removeEventListener(Event.ENTER_FRAME,repositionTarget);
-			if ( _target != null ) {
+			if ( _target != null  ) {
 				applyModifications();
-				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,x,y,width,height,rotation,_centre.pivot));
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED_DONE,_targetProperties.x,_targetProperties.y,
+					_targetProperties.width,_targetProperties.height,_targetProperties.rotation,_centre.pivot));
 			}
 		}
 
@@ -817,25 +928,52 @@ package dv.ui.modifier {
 		 */
 		private function applyModifications():void{
 			if ( _target != null ) {
-			//	log.info("apply: ");
-				_target.x = x;	
-				_target.y = y;
-				_target.rotation = rotation
-				//updateModifiedData()
+				//	log.info("apply: ");
+				if (_isCentered)
+				{
+					//if(_target.rotation != rotation){
+					var localOppositeLeg : Number = _centre.pivot.x;
+					var localAdjacentLeg : Number = _centre.pivot.y;
+					var Ls : Number = Math.sqrt((localOppositeLeg * localOppositeLeg) + (localAdjacentLeg * localAdjacentLeg));
+					if (_centre.pivot.x < 0)
+					{
+						Ls = -Ls;
+					}
+					var Lr : Number = Math.atan(localAdjacentLeg / localOppositeLeg);
+					var Gr : Number = MathUtils.degree2radian(rotation) + Lr;
+					var Gx : Number = Math.cos(Gr) * Ls;
+					var Gy : Number = Math.sin(Gr) * Ls;
+					
+					_targetProperties.x = x + Gx;
+					_targetProperties.y = y + Gy;
+					_targetProperties.rotation = Math.round(rotation);
+				}
+				else
+				{
+					_targetProperties.x = x;	
+					_targetProperties.y = y;
+					_targetProperties.rotation = Math.round(rotation);
+				}
+				
 				_resize(null);
 			}
-			//_resizeCounts = 0;
-			//if ( !hasEventListener(Event.ENTER_FRAME) ) {
-			//	addEventListener(Event.ENTER_FRAME,_resize);
-			//}
 		}
+		
+		
 		
 		/**
 		 * Dispatches all modification
 		 */
 		private function updateModifiedData():void{
 			if ( _target != null ) {
-				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,x,y,width,height,rotation,_centre.pivot));
+				dispatchEvent( new UIModifierEvent( UIModifierEvent.MODIFIED,_targetProperties.x,_targetProperties.y,_targetProperties.width,_targetProperties.height,_targetProperties.rotation,_centre.pivot));
+				if(_applyModification){
+					_target.x=_targetProperties.x 
+					_target.y=_targetProperties.y  
+					_target.width=_targetProperties.width 
+					_target.height=_targetProperties.height
+					_target.rotation=_targetProperties.rotation
+				}
 			}
 		}
 		
@@ -865,8 +1003,8 @@ package dv.ui.modifier {
 				
 				draw();
 				
-				_target.width = width
-				_target.height = height
+				_targetProperties.width = width
+				_targetProperties.height = height
 				
 				_centre.bounds = new Rectangle(0,0,width,height);
 				
@@ -956,5 +1094,21 @@ package dv.ui.modifier {
 		{
 			CursorManager.removeCursor(_cursorID);
 		}
+
+		public function get applyModification():Boolean
+		{
+			return _applyModification;
+		}
+		
+		/**
+		 * If set to true the target will size realtime,
+		 * If set to false the modifier will only dispatch events
+		 * @param value Boolean
+		 **/
+		public function set applyModification(value:Boolean):void
+		{
+			_applyModification = value;
+		}
+
 	}
 }

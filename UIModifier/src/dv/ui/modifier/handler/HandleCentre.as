@@ -27,6 +27,7 @@ package dv.ui.modifier.handler
 		private var _cursor:Class;
 		private var _cursorID:Number;
 		private var _bounds:Rectangle;
+		private var _canDrag:Boolean = true;
 		
 		public function HandleCentre()
 		{
@@ -34,6 +35,17 @@ package dv.ui.modifier.handler
 			updatePosition(null);
 		}
 		
+
+		public function get canDrag():Boolean
+		{
+			return _canDrag;
+		}
+
+		public function set canDrag(value:Boolean):void
+		{
+			_canDrag = value;
+		}
+
 		public function set bounds ( value:Rectangle ):void
 		{
 			/* _bounds = value;
@@ -54,9 +66,11 @@ package dv.ui.modifier.handler
 		
 		override protected function startModifier(event:MouseEvent):void
 		{
-			startDrag(false,_bounds);
-			parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseReposition)
-			addEventListener(Event.ENTER_FRAME,updatePosition);
+			if(_canDrag){
+				startDrag(false,_bounds);
+				parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseReposition)
+				addEventListener(Event.ENTER_FRAME,updatePosition);
+			}
 		}
 		
 		private function releaseReposition(event:MouseEvent):void
@@ -64,6 +78,12 @@ package dv.ui.modifier.handler
 			stopDrag();
 			parent.stage.removeEventListener(MouseEvent.MOUSE_UP,releaseReposition)
 			removeEventListener(Event.ENTER_FRAME,updatePosition);
+		}
+		override protected function showCursor(event:MouseEvent):void{
+			if(_canDrag){
+				super.showCursor(event);
+			}
+			
 		}
 		
 		private function updatePosition(event:Event):void
