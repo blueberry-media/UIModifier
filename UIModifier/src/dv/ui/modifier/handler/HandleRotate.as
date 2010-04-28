@@ -11,6 +11,7 @@
 package dv.ui.modifier.handler
 {
 	import dv.events.HandleEvent;
+	import dv.utils.UIModifierFrameTicker;
 	
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -26,7 +27,7 @@ package dv.ui.modifier.handler
 		
 		private var _id:String;
 
-		private var _startPoint:Point
+		private var _startPoint:Point;
 		
 		public function HandleRotate ()
 		{
@@ -50,7 +51,7 @@ package dv.ui.modifier.handler
 		override protected function startModifier(event:MouseEvent):void{
 			startPoint = new Point ( parent.mouseX , parent.mouseY );
 			parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseScale)
-			addEventListener(Event.ENTER_FRAME,updatePosition);
+			UIModifierFrameTicker.getInstance().addEventListener(UIModifierFrameTicker.FRAME_TICK, updatePosition, false, 0, true);
 			super.startModifier(event);
 		}
 		
@@ -60,8 +61,8 @@ package dv.ui.modifier.handler
 		
 		private function releaseScale(event:MouseEvent):void{
 			//stopDrag();
-			removeEventListener(Event.ENTER_FRAME,updatePosition);
-			hideCursor(null)
+			UIModifierFrameTicker.getInstance().removeEventListener(UIModifierFrameTicker.FRAME_TICK ,updatePosition);
+			hideCursor(null);
 		}
 	}
 }

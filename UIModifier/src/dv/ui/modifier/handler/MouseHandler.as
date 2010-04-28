@@ -41,9 +41,9 @@ package dv.ui.modifier.handler
 			addChild(bitmap);
 			width = bitmap.width;
 			height = bitmap.height;
-			bitmap.addEventListener(MouseEvent.MOUSE_DOWN,startModifier)
-			bitmap.addEventListener(MouseEvent.MOUSE_OVER,showCursor)
-			bitmap.addEventListener(MouseEvent.MOUSE_OUT,hideCursor)
+			bitmap.addEventListener(MouseEvent.MOUSE_DOWN,startModifier);
+			bitmap.addEventListener(MouseEvent.MOUSE_OVER,showCursor);
+			bitmap.addEventListener(MouseEvent.MOUSE_OUT,hideCursor);
 		}
 		
 		/**
@@ -65,9 +65,9 @@ package dv.ui.modifier.handler
 		 */
 		protected function startModifier(event:MouseEvent):void
 		{
-			parent.stage.addEventListener(MouseEvent.MOUSE_UP,stopModifier)
-			bitmap.removeEventListener(MouseEvent.MOUSE_OVER,showCursor)
-			bitmap.removeEventListener(MouseEvent.MOUSE_OUT,hideCursor)
+			parent.stage.addEventListener(MouseEvent.MOUSE_UP,stopModifier);
+			bitmap.removeEventListener(MouseEvent.MOUSE_OVER,showCursor);
+			bitmap.removeEventListener(MouseEvent.MOUSE_OUT,hideCursor);
 		}
 		
 		/**
@@ -78,9 +78,9 @@ package dv.ui.modifier.handler
 		 */
 		protected function stopModifier(event:MouseEvent):void
 		{
-			parent.stage.removeEventListener(MouseEvent.MOUSE_UP,stopModifier)
-			bitmap.addEventListener(MouseEvent.MOUSE_OVER,showCursor)
-			bitmap.addEventListener(MouseEvent.MOUSE_OUT,hideCursor)
+			parent.stage.removeEventListener(MouseEvent.MOUSE_UP,stopModifier);
+			bitmap.addEventListener(MouseEvent.MOUSE_OVER,showCursor);
+			bitmap.addEventListener(MouseEvent.MOUSE_OUT,hideCursor);
 		}
 		
 		/**

@@ -11,6 +11,7 @@
 package dv.ui.modifier.handler
 {
 	import dv.events.HandleEvent;
+	import dv.utils.UIModifierFrameTicker;
 	
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -52,23 +53,24 @@ package dv.ui.modifier.handler
 		override protected function startModifier(event:MouseEvent):void
 		{
 			startDrag(false,_bounds);
-			parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseScale)
-			addEventListener(Event.ENTER_FRAME,updatePosition);
+			parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseScale);
+			UIModifierFrameTicker.getInstance().addEventListener(UIModifierFrameTicker.FRAME_TICK, updatePosition, false, 0, true);
+			
 			super.startModifier(event);
 		}
 		
 		private function updatePosition(event:Event):void
 		{
-			x = Math.round(x)
-			y = Math.round(y)
+			x = Math.round(x);
+			y = Math.round(y);
 			dispatchEvent( new HandleEvent( HandleEvent.MOVED,x,y,_id));
 		}
 		
 		private function releaseScale(event:MouseEvent):void
 		{
 			stopDrag();
-			removeEventListener(Event.ENTER_FRAME,updatePosition);
-			hideCursor(null)
+			UIModifierFrameTicker.getInstance().removeEventListener(UIModifierFrameTicker.FRAME_TICK ,updatePosition);
+			hideCursor(null);
 		}
 	}
 }

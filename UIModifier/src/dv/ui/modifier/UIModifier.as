@@ -45,6 +45,7 @@ package dv.ui.modifier
 	import dv.ui.modifier.handler.HandleRotate;
 	import dv.ui.modifier.handler.HandleScale;
 	import dv.utils.MathUtils;
+	import dv.utils.UIModifierFrameTicker;
 	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -260,6 +261,7 @@ package dv.ui.modifier
 			buttonMode = false;
 			Logger.useTrace =  _debug;
 			//			addEventListener(FocusEvent.FOCUS_IN,focusInHandler);
+			UIModifierFrameTicker.getInstance().start(12);
 		}
 		
 		private function doubleClickEvent(event : MouseEvent) : void
@@ -301,15 +303,19 @@ package dv.ui.modifier
 					break;
 				case Keyboard.DOWN:
 					y += steps;
+					applyModifications();
 					break;
 				case Keyboard.UP:
 					y -= steps;
+					applyModifications();
 					break;
 				case Keyboard.LEFT:
 					x -= steps;
+					applyModifications();
 					break;
 				case Keyboard.RIGHT:
 					x += steps;
+					applyModifications();
 					break;
 				//V
 				case 67:
@@ -328,7 +334,6 @@ package dv.ui.modifier
 			}
 			event.stopImmediatePropagation()
 			event.preventDefault();
-			applyModifications();
 		}
 		
 		override protected function keyUpHandler(event : KeyboardEvent) : void
@@ -816,7 +821,7 @@ package dv.ui.modifier
 			max.height -= height
 			startDrag(false, max)
 			stage.addEventListener(MouseEvent.MOUSE_UP, stopDragging);
-			stage.addEventListener(Event.ENTER_FRAME, repositionTarget);
+			UIModifierFrameTicker.getInstance().addEventListener(UIModifierFrameTicker.FRAME_TICK , repositionTarget, false, 0 , true);
 		}
 		
 		/**
@@ -840,7 +845,7 @@ package dv.ui.modifier
 		{
 			stopDrag();
 			stage.removeEventListener(MouseEvent.MOUSE_UP, stopDragging);
-			stage.removeEventListener(Event.ENTER_FRAME, repositionTarget);
+			UIModifierFrameTicker.getInstance().removeEventListener(UIModifierFrameTicker.FRAME_TICK, repositionTarget);
 			if (_targetProperties != null)
 			{
 				applyModifications();

@@ -10,6 +10,8 @@
 
 package dv.ui.modifier.handler
 {
+	import dv.utils.UIModifierFrameTicker;
+	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -59,25 +61,25 @@ package dv.ui.modifier.handler
 		}
 		
 		public function set pivot(value:Point):void{
-			x = value.x
-			y = value.y
-			_pivot = value
+			x = value.x;
+			y = value.y;
+			_pivot = value;
 		}
 		
 		override protected function startModifier(event:MouseEvent):void
 		{
 			if(_canDrag){
 				startDrag(false,_bounds);
-				parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseReposition)
-				addEventListener(Event.ENTER_FRAME,updatePosition);
+				parent.stage.addEventListener(MouseEvent.MOUSE_UP,releaseReposition);
+				UIModifierFrameTicker.getInstance().addEventListener(UIModifierFrameTicker.FRAME_TICK, updatePosition, false, 0, true);
 			}
 		}
 		
 		private function releaseReposition(event:MouseEvent):void
 		{
 			stopDrag();
-			parent.stage.removeEventListener(MouseEvent.MOUSE_UP,releaseReposition)
-			removeEventListener(Event.ENTER_FRAME,updatePosition);
+			parent.stage.removeEventListener(MouseEvent.MOUSE_UP,releaseReposition);
+			UIModifierFrameTicker.getInstance().removeEventListener(UIModifierFrameTicker.FRAME_TICK ,updatePosition);
 		}
 		override protected function showCursor(event:MouseEvent):void{
 			if(_canDrag){
@@ -88,8 +90,8 @@ package dv.ui.modifier.handler
 		
 		private function updatePosition(event:Event):void
 		{
-			x = Math.round(x)
-			y = Math.round(y)
+			x = Math.round(x);
+			y = Math.round(y);
 			pivot = new Point(x,y);
 		}	
 	}
