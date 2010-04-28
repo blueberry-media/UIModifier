@@ -2,10 +2,12 @@
 <flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
     <classEntry path="dv.events.HandleEvent"/>
+    <classEntry path="dv.events.UIModifierEvent"/>
     <classEntry path="dv.log.LogEvent"/>
     <classEntry path="dv.log.LogInstance"/>
     <classEntry path="dv.log.Logger"/>
     <classEntry path="dv.ui.modifier.UIModifier"/>
+    <classEntry path="dv.ui.modifier.data.DisplayProperties"/>
     <classEntry path="dv.ui.modifier.handler.HandleCentre"/>
     <classEntry path="dv.ui.modifier.handler.HandleRotate"/>
     <classEntry path="dv.ui.modifier.handler.HandleScale"/>

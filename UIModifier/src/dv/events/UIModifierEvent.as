@@ -32,12 +32,12 @@ package dv.events
 			rotation:Number, pivot:Point,
 			bubbles:Boolean=false, cancelable:Boolean=false)
 		{
-			_x = x
-			_y = y
-			_width = width
-			_height = height
-			_rotation = rotation
-			_pivot = pivot
+			_x = x;
+			_y = y;
+			_width = width;
+			_height = height;
+			_rotation = rotation;
+			_pivot = pivot;
 			super(type, bubbles, cancelable);
 		}
 
@@ -73,7 +73,7 @@ package dv.events
 		
 		override public function toString():String
 		{
-			return "[UIModifierEvent rotation="+rotation+", width="+width+", height="+height+", x="+x+",y="+y+", pivot="+pivot+"]"
+			return "[UIModifierEvent rotation="+rotation+", width="+width+", height="+height+", x="+x+",y="+y+", pivot="+pivot+"]";
 		}	
 	}
 }
